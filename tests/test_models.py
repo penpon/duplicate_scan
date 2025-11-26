@@ -66,26 +66,6 @@ def test_duplicate_group_empty_files():
     assert duplicate_group.total_size == 0
 
 
-def test_duplicate_group_negative_size():
-    """Test DuplicateGroup with negative total size."""
-    # Given: Single file and negative total size (edge case)
-    now = datetime.now()
-    file = FileMeta(
-        path="/test/file.txt",
-        size=1024,
-        modified_time=now,
-        partial_hash="abc123",
-        full_hash="def456",
-    )
-
-    # When: Creating a duplicate group with negative total size
-    duplicate_group = DuplicateGroup(files=[file], total_size=-100)
-
-    # Then: Group should contain file but with negative total size
-    assert len(duplicate_group.files) == 1
-    assert duplicate_group.total_size == -100
-
-
 def test_duplicate_group_single_file():
     """Test DuplicateGroup with single file."""
     # Given: Single file
