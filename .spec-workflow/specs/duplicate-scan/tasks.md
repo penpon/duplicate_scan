@@ -81,11 +81,10 @@
   - _Requirements: 4_
   - _Prompt: **instruction** Role: Python Developer | Task: Implement Deletion Logic and Cleanup View | Context: Safe deletion of selected files | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Implement deletion using `send2trash` in `src/services/deleter.py` | Create `CleanupView` in `src/ui/cleanup_view.py` to show results (deleted count, space saved) | Restrictions: Handle errors (e.g., file in use) | Success Criteria: Files are moved to trash, summary is correct | After Implementation: Verify trash contents | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
-- [ ] 10. 統合 & E2Eテスト
+- [x] 10. 統合 & E2Eテスト
   - File: tests/integration/test_flow.py
   - 完全なワークフローを検証
   - Purpose: すべてのコンポーネントが連携して動作することを確認
   - _Leverage: design.md (Testing Strategy)_
   - _Requirements: All_
-  - _Prompt: **instruction** Role: QA Engineer | Task: Perform Integration and E2E Tests | Context: Verify the entire application flow | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create integration tests combining Scanner, Hasher, and Detector | Perform manual E2E tests with dummy files on local/network drives | Restrictions: None | Success Criteria: All tests pass, app works as expected | After Implementation: Final Report | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
-
+  - _Prompt: **instruction** Role: QA Engineer | Task: Perform Integration and E2E Tests | Context: Verify the entire application flow | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create integration tests covering Hasher, DuplicateDetector, Deleter, and key UI views (ResultsView, CleanupView) | Perform manual E2E tests including Scanner → Hasher → Detector → Deleter with dummy files on local/network drives | Restrictions: None | Success Criteria: All tests pass, app works as expected | After Implementation: Final Report | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
