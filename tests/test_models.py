@@ -98,7 +98,7 @@ class TestDuplicateGroup:
         duplicate_group = DuplicateGroup(files=[file_meta], total_size=1024)
 
         # When & Then
-        assert isinstance(duplicate_group.files, List)
+        assert isinstance(duplicate_group.files, list)
         assert isinstance(duplicate_group.total_size, int)
         assert len(duplicate_group.files) == 1
         assert isinstance(duplicate_group.files[0], FileMeta)
