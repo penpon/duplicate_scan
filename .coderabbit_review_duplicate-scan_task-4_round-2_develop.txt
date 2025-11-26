@@ -1,0 +1,48 @@
+Starting CodeRabbit review in plain text mode...
+
+Connecting to review service
+Setting up
+Analyzing
+Reviewing
+
+============================================================================
+File: .spec-workflow/specs/duplicate-scan/Implementation Logs/task-4_2025-11-26T0706_cb70511c.md
+Line: 33 to 43
+Type: potential_issue
+
+Prompt for AI Agent:
+.spec-workflow/specs/duplicate-scan/Implementation Logs/task-4_2025-11-26T0706_cb70511c.md around lines 33 to 43: the documentation incorrectly marks calculate_partial_hash and calculate_full_hash as "Exported: No" even though they are public methods of the exported Hasher class; update the doc entries for both methods to "Exported: Yes" (or remove individual export flags and state that public methods of exported classes are part of the public API) so the docs accurately reflect their exported/public status.
+
+
+
+============================================================================
+File: tests/test_models.py
+Line: 88 to 104
+Type: potential_issue
+
+Prompt for AI Agent:
+In tests/test_models.py around lines 88 to 104, the DuplicateGroup is being constructed with an explicit total_size argument (line ~98) which is incorrect; remove the total_size parameter and instantiate DuplicateGroup with only the files list (e.g., DuplicateGroup(files=[file_meta]) ) so the class computes total_size internally; update the test to rely on the computed total_size (the existing assertions can remain unchanged).
+
+
+
+============================================================================
+File: tests/test_models.py
+Line: 60 to 86
+Type: potential_issue
+
+Prompt for AI Agent:
+In tests/test_models.py around lines 60 to 86, the test erroneously passes total_size to DuplicateGroup.__init__ even though total_size is a computed property; remove the total_size keyword when constructing DuplicateGroup (create it with only files), then assert that duplicate_group.total_size equals the expected total_size (2048) and keep the existing assertions about files and length.
+
+
+
+============================================================================
+File: src/models/duplicate_group.py
+Line: 8 to 12
+Type: potential_issue
+
+Prompt for AI Agent:
+In src/models/duplicate_group.py around lines 8 to 12, the dataclass currently only declares files but tests pass total_size to the constructor; add a total_size field with a default of None (e.g. total_size: int | None = None) and keep the computed property but have it return the explicit field when provided or compute the sum of file sizes when the field is None, so the constructor accepts total_size while still computing it when not supplied.
+
+
+
+Review completed ✔
