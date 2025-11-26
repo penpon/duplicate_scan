@@ -129,6 +129,8 @@ class ResultsView:
         """重複グループリストのUIを更新する"""
         self.groups_column.controls.clear()
         self.file_checkboxes.clear()
+        self.selected_files.clear()
+        self._update_delete_button()
 
         if not self.duplicate_groups:
             self.groups_column.controls.append(
