@@ -83,7 +83,7 @@ class TestHasherRefactor:
 
     def test_memory_efficiency_large_file(self):
         """大きなファイルでのメモリ効率テスト"""
-        # Given: 1MBのファイル（チャンクサイズ4KBに対して十分に大きい）
+        # Given: 1MBのファイル(チャンクサイズ4KBに対して十分に大きい)
         hasher = Hasher(chunk_size=4096)
         test_content = b"X" * (1024 * 1024)  # 1MB
 
