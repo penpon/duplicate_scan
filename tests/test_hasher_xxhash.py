@@ -84,7 +84,7 @@ class TestHasherXxhash:
     def test_xxhash64_full_hash(self):
         """xxhash64による完全ハッシュ計算テスト"""
         # Given: テストファイルとxxhash64設定
-        test_content = b"Test content for xxhash64 full hash" * 200  # 約6KB
+        test_content = b"Test content for xxhash64 full hash" * 200  # 約7KB
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             temp_file.write(test_content)
             temp_file_path = temp_file.name
@@ -164,3 +164,10 @@ class TestHasherXxhash:
         # When & Then: エラーが発生すること
         with pytest.raises(ValueError):
             Hasher(config)
+
+    def test_scan_config_positional_with_hash_algorithm_raises_error(self):
+        """ScanConfigを位置引数で渡した際にhash_algorithmを同時指定するとエラー"""
+        config = ScanConfig()
+
+        with pytest.raises(ValueError, match="Cannot specify hash_algorithm"):
+            Hasher(config, hash_algorithm="sha256")
