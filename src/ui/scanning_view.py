@@ -9,7 +9,7 @@ import flet as ft
 class ScanningView:
     """UI component for displaying progress during file scanning operations."""
 
-    def __init__(self) -> None:
+    def __init__(self, page: Optional[ft.Page] = None) -> None:
         """Initialize ScanningView with default UI elements."""
         self.progress_bar = ft.ProgressBar(
             visible=True,
@@ -18,12 +18,28 @@ class ScanningView:
             color=ft.Colors.BLUE_400,
             bgcolor=ft.Colors.GREY_200,
         )
-        self.status_text = ft.Text("準備中...", size=16, weight=ft.FontWeight.NORMAL)
-        self.current_file_text = ft.Text("", size=12, color=ft.Colors.GREY_600)
-        self.files_processed_text = ft.Text(
-            "0 / 0", size=12, weight=ft.FontWeight.NORMAL
+        self.status_text = ft.Text(
+            "準備中...",
+            size=16,
+            weight=ft.FontWeight.NORMAL,
         )
-        self.error_text = ft.Text("", size=12, color=ft.Colors.RED_400, visible=False)
+        self.current_file_text = ft.Text(
+            "",
+            size=12,
+            color=ft.Colors.GREY_600,
+        )
+        self.files_processed_text = ft.Text(
+            "0 / 0",
+            size=12,
+            weight=ft.FontWeight.NORMAL,
+        )
+        self.error_text = ft.Text(
+            "",
+            size=12,
+            color=ft.Colors.RED_400,
+            visible=False,
+        )
+        self.page = page
 
     def update_progress(
         self,
@@ -57,6 +73,9 @@ class ScanningView:
         else:
             self.error_text.visible = False
 
+        if self.page:
+            self.page.update()
+
     def reset(self) -> None:
         """Reset the view to its initial state."""
         self.progress_bar.value = 0.0
@@ -65,6 +84,9 @@ class ScanningView:
         self.files_processed_text.value = "0 / 0"
         self.error_text.visible = False
         self.error_text.value = ""
+
+        if self.page:
+            self.page.update()
 
     def build(self) -> ft.Column:
         """Build and return the Flet control tree.
