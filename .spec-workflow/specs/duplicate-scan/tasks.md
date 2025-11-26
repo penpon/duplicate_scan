@@ -33,7 +33,7 @@
   - _Requirements: 1, 2_
   - _Prompt: **instruction** Role: Python Developer | Task: Implement Scanner Service | Context: Need to scan local and network drives for target files | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create `Scanner` class in `src/services/scanner.py` | Implement `scan_directories` method using `pathlib` | Add filtering for image/video extensions (jpg, png, mp4, mov, etc.) | Handle permission errors gracefully | Restrictions: Must handle network paths correctly | Success Criteria: Returns list of FileMeta objects for valid files | After Implementation: Create unit tests | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
-- [-] 4. Hasherサービスの実装
+- [x] 4. Hasherサービスの実装
   - File: src/services/hasher.py
   - 部分ハッシュと完全ハッシュのロジックを実装
   - Purpose: 効率的に重複を識別
