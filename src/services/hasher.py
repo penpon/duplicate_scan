@@ -2,7 +2,7 @@
 
 import hashlib
 from pathlib import Path
-from typing import Any, Optional, Union, cast
+from typing import Any, Optional, Union
 
 import xxhash
 
@@ -18,38 +18,38 @@ class Hasher:
 
     def __init__(
         self,
-        config: Optional[Union[ScanConfig, int]] = None,
-        chunk_size: Optional[int] = None,
+        chunk_size: Optional[Union[ScanConfig, int]] = None,
         hash_algorithm: Optional[str] = None,
+        *,
+        config: Optional[ScanConfig] = None,
     ) -> None:
         """Hasherを初期化する
 
         Args:
-            config: ScanConfigオブジェクト。指定された場合は他のパラメータを無視
-            chunk_size: ファイル読み込みのチャンクサイズ(バイト単位)。デフォルトは4096(4KB)
-            hash_algorithm: 使用するハッシュアルゴリズム。デフォルトはSHA256
+            chunk_size: ファイル読み込みのチャンクサイズ(バイト単位) または ScanConfig。
+                旧API互換のため位置引数で指定可能。
+            hash_algorithm: 使用するハッシュアルゴリズム。デフォルトはSHA256。
+            config: ScanConfigオブジェクト。指定された場合は他のパラメータを無視。
         """
-        # 後方互換性のための処理
-        if config is not None and not hasattr(config, "chunk_size"):
-            # configがScanConfigオブジェクトでない場合（古い形式）
-            # この場合、configはint（chunk_size）として扱われる
-            if isinstance(config, int):
-                self.chunk_size = config
-                self.hash_algorithm = (
-                    hash_algorithm if hash_algorithm is not None else "sha256"
-                )
-            else:
-                raise ValueError(
-                    "config must be a ScanConfig object or integer (chunk_size)"
-                )
-        elif config is not None:
-            # 新しい形式：ScanConfigオブジェクト
-            scan_config = cast(ScanConfig, config)
+        scan_config: Optional[ScanConfig] = None
+        chunk_size_value: Optional[int] = None
+
+        if config is not None:
+            if not isinstance(config, ScanConfig):
+                raise ValueError("config must be a ScanConfig object")
+            scan_config = config
+        elif isinstance(chunk_size, ScanConfig):
+            scan_config = chunk_size
+        elif isinstance(chunk_size, int):
+            chunk_size_value = chunk_size
+        elif chunk_size is not None:
+            raise ValueError("chunk_size must be an int or ScanConfig")
+
+        if scan_config is not None:
             self.chunk_size = scan_config.chunk_size
             self.hash_algorithm = scan_config.hash_algorithm
         else:
-            # デフォルト値または個別パラメータ
-            self.chunk_size = chunk_size if chunk_size is not None else 4096
+            self.chunk_size = chunk_size_value if chunk_size_value is not None else 4096
             self.hash_algorithm = (
                 hash_algorithm if hash_algorithm is not None else "sha256"
             )
