@@ -1,7 +1,6 @@
 """Tests for DuplicateDetector."""
 
 from datetime import datetime
-from typing import List
 from src.models.file_meta import FileMeta
 from src.services.detector import DuplicateDetector
 
@@ -110,7 +109,9 @@ class TestDuplicateDetector:
         result = detector.find_duplicates([file1, file2])
         assert result == []
 
-    def test_find_duplicates_same_size_and_partial_none_full_hash(self) -> None:
+    def test_find_duplicates_same_size_and_partial_none_full_hash(
+        self,
+    ) -> None:
         """Test that files with same size and partial_hash but
         full_hash=None are not grouped."""
         detector = DuplicateDetector()
