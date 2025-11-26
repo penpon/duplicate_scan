@@ -156,8 +156,8 @@ class TestHasherXxhash:
         finally:
             Path(temp_file_path).unlink()
 
-    def test_invalid_hash_algorithm_fallback(self):
-        """無効なハッシュアルゴリズムの場合のフォールバックテスト"""
+    def test_invalid_hash_algorithm_raises_error(self):
+        """無効なハッシュアルゴリズム指定でエラーが発生することの検証"""
         # Given: 無効なハッシュアルゴリズムを指定
         config = ScanConfig(hash_algorithm="invalid_algorithm")
 
