@@ -2,7 +2,7 @@
 
 import hashlib
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, overload
 
 import xxhash
 
@@ -15,6 +15,24 @@ class Hasher:
     大きなファイルやネットワークドライブ上のファイルを効率的に処理するために、
     部分ハッシュと完全ハッシュの計算機能を提供する。
     """
+
+    @overload
+    def __init__(
+        self,
+        chunk_size: Optional[int] = None,
+        hash_algorithm: Optional[str] = None,
+        *,
+        config: Optional[ScanConfig] = None,
+    ) -> None: ...
+
+    @overload
+    def __init__(
+        self,
+        chunk_size: ScanConfig,
+        hash_algorithm: None = None,
+        *,
+        config: Optional[ScanConfig] = None,
+    ) -> None: ...
 
     def __init__(
         self,
