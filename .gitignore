@@ -5,8 +5,9 @@ build/
 dist/
 wheels/
 *.egg-info
-.pre-commit-config.yaml
 .python-version
+worktree/
+.coderabbit_review_*
 
 # Virtual environments
 .venv
