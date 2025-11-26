@@ -23,9 +23,13 @@ dev = [
 lint.select = [
     "S",  # flake8-bandit (セキュリティチェック)
 ]
+lint.per-file-ignores."tests/**/*.py" = ["S101"]  # Allow assert in tests
 
 [tool.mypy]
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
 
 [tool.poe.tasks]
 format = "uv run ruff format ."
