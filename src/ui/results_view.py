@@ -138,13 +138,9 @@ class ResultsView:
             )
             return
 
-        # 大きなリストの場合はパフォーマンスのためバッチ処理
-        batch_size = 50
-        for i in range(0, len(self.duplicate_groups), batch_size):
-            batch = self.duplicate_groups[i : i + batch_size]
-            for group in batch:
-                group_item = self._create_group_item(group)
-                self.groups_column.controls.append(group_item)
+        for group in self.duplicate_groups:
+            group_item = self._create_group_item(group)
+            self.groups_column.controls.append(group_item)
 
     def _create_group_item(self, group: DuplicateGroup) -> ft.Card:
         """
