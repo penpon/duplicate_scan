@@ -12,9 +12,12 @@ dependencies = [
 [dependency-groups]
 dev = [
     "mypy>=1.18.2",
+    "pip-audit>=2.9.0",
     "poethepoet>=0.38.0",
     "pre-commit>=4.5.0",
     "pytest>=9.0.1",
+    "pytest-cov>=6.0.0",
+    "pytest-xdist>=3.8.0",
     "ruff>=0.14.6",
 ]
 
@@ -22,12 +25,25 @@ dev = [
 lint.select = [
     "S",  # flake8-bandit (セキュリティチェック)
 ]
+lint.per-file-ignores."tests/*" = ["S101"]  # テストファイルでのassert使用を許可
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
 
 [tool.mypy]
 ignore_missing_imports = true
+exclude = [
+    "worktree/.*",
+]
 
 [tool.poe.tasks]
 format = "uv run ruff format ."
 lint = "uv run ruff check --fix ."
 type-check = "uv run mypy ."
+test = "bash scripts/run_tests.sh"
+coverage = "bash scripts/run_coverage.sh"
+audit = "uv run pip-audit --ignore-vuln GHSA-f83h-ghpp-7wcc"
+
 check = ["format", "lint", "type-check"]
+quality-check = ["check", "test", "coverage", "audit"]
