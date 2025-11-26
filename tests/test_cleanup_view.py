@@ -227,3 +227,25 @@ class TestCleanupView:
 
         # Failed section should be visible
         assert view.failed_section.visible is True
+
+    def test_cleanup_view_back_to_home_button(self) -> None:
+        """Test back to home button exists and is clickable."""
+        view = CleanupView()
+        view.build()
+
+        assert view.back_to_home_button is not None
+        assert isinstance(view.back_to_home_button, ft.ElevatedButton)
+        assert view.back_to_home_button.text == "Scan Again"
+
+    def test_cleanup_view_back_to_home_callback(self) -> None:
+        """Test back to home button triggers callback."""
+        view = CleanupView()
+        view.build()
+
+        callback = MagicMock()
+        view.set_back_to_home_callback(callback)
+
+        # Simulate button click
+        view._on_back_to_home_clicked(None)
+
+        callback.assert_called_once()

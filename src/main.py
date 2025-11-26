@@ -151,6 +151,9 @@ class MainView(HomeView):
         # 削除コールバックを設定
         self.results_view.set_delete_callback(self._on_delete_files)
 
+        # ホームに戻るコールバックを設定
+        self.results_view.set_back_to_home_callback(self._on_back_to_home)
+
         # 重複グループを設定
         self.results_view.set_duplicate_groups(duplicate_groups)
 
@@ -235,6 +238,7 @@ class MainView(HomeView):
 
         # 完了コールバックを設定
         self.cleanup_view.set_done_callback(self._on_cleanup_done)
+        self.cleanup_view.set_back_to_home_callback(self._on_cleanup_done)
 
         # 結果を設定
         self.cleanup_view.set_result(result)
@@ -246,6 +250,10 @@ class MainView(HomeView):
 
     def _on_cleanup_done(self) -> None:
         """クリーンアップ完了後にホーム画面に戻る"""
+        self._on_back_to_home()
+
+    def _on_back_to_home(self) -> None:
+        """ホーム画面に戻る"""
         if not self.page:
             return
 

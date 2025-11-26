@@ -35,6 +35,14 @@ class ResultsView:
             icon=ft.Icons.SELECT_ALL,
             tooltip="Keep oldest file, select others for deletion",
         )
+        self.back_to_home_button = ft.ElevatedButton(
+            "Scan Again",
+            on_click=self._on_back_to_home_clicked,
+            icon=ft.Icons.REFRESH,
+            bgcolor=ft.Colors.BLUE_600,
+            color=ft.Colors.WHITE,
+        )
+        self.back_to_home_callback: Optional[Callable[[], None]] = None
 
     def build(self) -> ft.Column:
         """
@@ -64,9 +72,11 @@ class ResultsView:
                 ft.Divider(),
                 ft.Row(
                     [
+                        self.back_to_home_button,
                         self.delete_button,
                     ],
                     alignment=ft.MainAxisAlignment.CENTER,
+                    spacing=20,
                 ),
             ],
             scroll=ft.ScrollMode.AUTO,
@@ -280,6 +290,20 @@ class ResultsView:
     def _on_clear_selection_clicked(self, e: Optional[ft.ControlEvent]) -> None:
         """選択クリアボタンがクリックされたときの処理"""
         self.clear_selection()
+
+    def _on_back_to_home_clicked(self, e: Optional[ft.ControlEvent]) -> None:
+        """ホームに戻るボタンがクリックされたときの処理"""
+        if self.back_to_home_callback:
+            self.back_to_home_callback()
+
+    def set_back_to_home_callback(self, callback: Callable[[], None]) -> None:
+        """
+        ホームに戻るボタンのコールバックを設定する
+
+        Args:
+            callback: ホームに戻るときに呼ばれるコールバック関数
+        """
+        self.back_to_home_callback = callback
 
     def _on_select_all_duplicates_clicked(self, e: Optional[ft.ControlEvent]) -> None:
         """全重複ファイル選択ボタンがクリックされたときの処理

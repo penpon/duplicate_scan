@@ -32,6 +32,14 @@ class CleanupView:
             on_click=self._on_done_clicked,
             icon=ft.Icons.CHECK,
         )
+        self.back_to_home_button: ft.ElevatedButton = ft.ElevatedButton(
+            "Scan Again",
+            on_click=self._on_back_to_home_clicked,
+            icon=ft.Icons.REFRESH,
+            bgcolor=ft.Colors.BLUE_600,
+            color=ft.Colors.WHITE,
+        )
+        self.back_to_home_callback: Optional[Callable[[], None]] = None
 
     def build(self) -> ft.Column:
         """
@@ -144,7 +152,14 @@ class CleanupView:
                 self.failed_section,
                 ft.Divider(),
                 ft.Container(
-                    content=self.done_button,
+                    content=ft.Row(
+                        [
+                            self.back_to_home_button,
+                            self.done_button,
+                        ],
+                        alignment=ft.MainAxisAlignment.CENTER,
+                        spacing=20,
+                    ),
                     alignment=ft.alignment.center,
                     padding=20,
                 ),
@@ -203,7 +218,21 @@ class CleanupView:
         """
         self.done_callback = callback
 
+    def set_back_to_home_callback(self, callback: Callable[[], None]) -> None:
+        """
+        Set the callback for when back to home button is clicked.
+
+        Args:
+            callback: Function to call when back to home.
+        """
+        self.back_to_home_callback = callback
+
     def _on_done_clicked(self, e: Optional[ft.ControlEvent]) -> None:
         """Handle done button click."""
         if self.done_callback:
             self.done_callback()
+
+    def _on_back_to_home_clicked(self, e: Optional[ft.ControlEvent]) -> None:
+        """Handle back to home button click."""
+        if self.back_to_home_callback:
+            self.back_to_home_callback()
