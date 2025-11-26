@@ -1,12 +1,12 @@
 """Duplicate Detector service."""
 
-from typing import List, Dict, Iterable, Callable, TypeVar, Optional
+from typing import List, Dict, Iterable, Callable, TypeVar
 from collections.abc import Hashable
-
-K = TypeVar("K", bound=Hashable)
 
 from src.models.file_meta import FileMeta
 from src.models.duplicate_group import DuplicateGroup
+
+K = TypeVar("K", bound=Hashable)
 
 
 class DuplicateDetector:

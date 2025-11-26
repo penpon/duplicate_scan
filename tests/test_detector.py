@@ -84,7 +84,8 @@ class TestDuplicateDetector:
         assert result == []
 
     def test_find_duplicates_same_size_none_partial_hash(self):
-        """Test that files with same size and partial_hash=None are not grouped."""
+        """Test that files with same size and partial_hash=None
+        are not grouped."""
         detector = DuplicateDetector()
         file1 = FileMeta(
             path="/test/file1.txt",
@@ -102,7 +103,8 @@ class TestDuplicateDetector:
         assert result == []
 
     def test_find_duplicates_same_size_and_partial_none_full_hash(self):
-        """Test that files with same size and partial_hash but full_hash=None are not grouped."""
+        """Test that files with same size and partial_hash but
+        full_hash=None are not grouped."""
         detector = DuplicateDetector()
         file1 = FileMeta(
             path="/test/file1.txt",
