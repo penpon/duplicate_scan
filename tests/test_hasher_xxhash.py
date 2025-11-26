@@ -171,3 +171,21 @@ class TestHasherXxhash:
 
         with pytest.raises(ValueError, match="Cannot specify hash_algorithm"):
             Hasher(config, hash_algorithm="sha256")
+
+    def test_init_with_config_keyword_argument(self):
+        """configキーワード引数で初期化できることを確認"""
+        config = ScanConfig(chunk_size=32768, hash_algorithm="sha256")
+
+        hasher = Hasher(config=config)
+
+        assert hasher.chunk_size == 32768
+        assert hasher.hash_algorithm == "sha256"
+
+    def test_config_keyword_ignores_other_parameters(self):
+        """config指定時は他のパラメータが無視されることを検証"""
+        config = ScanConfig(chunk_size=65536, hash_algorithm="xxhash64")
+
+        hasher = Hasher(config=config, chunk_size=1024, hash_algorithm="md5")
+
+        assert hasher.chunk_size == 65536
+        assert hasher.hash_algorithm == "xxhash64"
