@@ -65,7 +65,7 @@
   - _Requirements: Non-functional (Usability)_
   - _Prompt: **instruction** Role: Flet Developer | Task: Implement Scanning View | Context: Display progress during long-running scan operations | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create `ScanningView` in `src/ui/scanning_view.py` | Add `ProgressBar` and status text | Integrate with Scanner/Hasher updates | Restrictions: Responsive UI | Success Criteria: UI updates in real-time during scan | After Implementation: Manual UI check | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
-- [-] 8. UI実装 - 結果ビュー
+- [x] 8. UI実装 - 結果ビュー
   - File: src/ui/results_view.py
   - 重複リストと選択インターフェースを作成
   - Purpose: 削除するファイルをレビューして選択

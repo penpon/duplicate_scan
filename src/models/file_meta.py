@@ -14,3 +14,7 @@ class FileMeta:
     modified_time: datetime
     partial_hash: Optional[str] = None
     full_hash: Optional[str] = None
+
+    def __hash__(self) -> int:
+        """Make FileMeta hashable for use in sets."""
+        return hash((self.path, self.size, self.modified_time))
