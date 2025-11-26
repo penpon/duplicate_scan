@@ -33,13 +33,16 @@ pythonpath = ["."]
 
 [tool.mypy]
 ignore_missing_imports = true
+exclude = [
+    "worktree/.*",
+]
 
 [tool.poe.tasks]
 format = "uv run ruff format ."
 lint = "uv run ruff check --fix ."
 type-check = "uv run mypy ."
-test = "uv run pytest -n auto tests/ -v"
-coverage = "uv run pytest -n auto --cov=src --cov-report=term"
+test = "bash scripts/run_tests.sh"
+coverage = "bash scripts/run_coverage.sh"
 audit = "uv run pip-audit --ignore-vuln GHSA-f83h-ghpp-7wcc"
 
 check = ["format", "lint", "type-check"]
