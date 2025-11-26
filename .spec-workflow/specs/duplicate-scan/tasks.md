@@ -16,7 +16,7 @@
   - _Requirements: Non-functional_
   - _Prompt: **instruction** Role: Python Developer | Task: Initialize project with uv and install dependencies | Context: Setting up a new Flet project for Duplicate File Remover | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Run `uv init` to initialize the project | Add dependencies: `flet`, `send2trash`, `pytest`, `ruff`, `mypy` | Create `src` directory structure | Ensure `pyproject.toml` is correctly configured | Restrictions: Use Python 3.10+ | Success Criteria: `uv run flet run src/main.py` runs successfully | After Implementation: Verify environment setup | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
-- [ ] 2. データモデルの実装
+- [x] 2. データモデルの実装
   - File: src/models/file_meta.py, src/models/duplicate_group.py
   - FileMetaとDuplicateGroupのデータクラスを定義
   - Purpose: ファイル処理用のデータ構造を定義
@@ -24,7 +24,7 @@
   - _Requirements: All_
   - _Prompt: **instruction** Role: Python Developer | Task: Implement data models | Context: Structured data needed for file metadata and duplicate groups | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create `FileMeta` dataclass in `src/models/file_meta.py` with fields: path, size, modified_time, partial_hash, full_hash | Create `DuplicateGroup` dataclass in `src/models/duplicate_group.py` with fields: files (List[FileMeta]), total_size | Restrictions: Use `@dataclass` | Success Criteria: Models can be instantiated and pass type checking | After Implementation: Run mypy | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
-- [ ] 3. Scannerサービスの実装
+- [x] 3. Scannerサービスの実装
   - File: src/services/scanner.py
   - 再帰的ディレクトリスキャンの実装
   - 画像/動画拡張子のフィルタリングを追加
@@ -33,7 +33,7 @@
   - _Requirements: 1, 2_
   - _Prompt: **instruction** Role: Python Developer | Task: Implement Scanner Service | Context: Need to scan local and network drives for target files | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create `Scanner` class in `src/services/scanner.py` | Implement `scan_directories` method using `pathlib` | Add filtering for image/video extensions (jpg, png, mp4, mov, etc.) | Handle permission errors gracefully | Restrictions: Must handle network paths correctly | Success Criteria: Returns list of FileMeta objects for valid files | After Implementation: Create unit tests | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
-- [ ] 4. Hasherサービスの実装
+- [x] 4. Hasherサービスの実装
   - File: src/services/hasher.py
   - 部分ハッシュと完全ハッシュのロジックを実装
   - Purpose: 効率的に重複を識別
