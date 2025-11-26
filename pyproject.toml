@@ -25,6 +25,7 @@ dev = [
 lint.select = [
     "S",  # flake8-bandit (セキュリティチェック)
 ]
+lint.per-file-ignores."tests/*" = ["S101"]  # テストファイルでのassert使用を許可
 
 [tool.mypy]
 ignore_missing_imports = true
