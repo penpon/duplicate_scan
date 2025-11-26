@@ -1,0 +1,18 @@
+Starting CodeRabbit review in plain text mode...
+
+Connecting to review service
+Setting up
+Analyzing
+Reviewing
+
+============================================================================
+File: src/ui/home_view.py
+Line: 119 to 147
+Type: potential_issue
+
+Prompt for AI Agent:
+In src/ui/home_view.py around lines 119 to 147, remove the test-specific hardcoded path handling (the block that checks folder_path.startswith("/Users/test/") or folder_path.startswith("/home/test/") and its return based on .endswith(".txt")); keep the initial empty/blank string check and then proceed to the actual filesystem validation using Path(folder_path).exists() and .is_dir() inside the existing try/except; ensure indentation remains correct and no other logic is changed so tests relying on pathlib.Path mocks still pass.
+
+
+
+Review completed ✔

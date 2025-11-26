@@ -27,13 +27,17 @@ class TestHomeView:
         assert isinstance(home_view.selected_folders, list)
         assert len(home_view.selected_folders) == 0
 
-    def test_add_folder_valid_path(self):
+    @patch("pathlib.Path.exists")
+    @patch("pathlib.Path.is_dir")
+    def test_add_folder_valid_path(self, mock_is_dir, mock_exists):
         """
         Given: 有効なフォルダパスが提供されたとき
         When: add_folderメソッドを呼び出す
         Then: フォルダがリストに追加される
         """
         # Given
+        mock_exists.return_value = True
+        mock_is_dir.return_value = True
         home_view = HomeView()
         valid_path = "/Users/test/Documents"
 
@@ -44,13 +48,17 @@ class TestHomeView:
         assert valid_path in home_view.selected_folders
         assert len(home_view.selected_folders) == 1
 
-    def test_add_folder_duplicate_path(self):
+    @patch("pathlib.Path.exists")
+    @patch("pathlib.Path.is_dir")
+    def test_add_folder_duplicate_path(self, mock_is_dir, mock_exists):
         """
         Given: 既に追加されているフォルダパスが提供されたとき
         When: add_folderメソッドを呼び出す
         Then: 重複して追加されない
         """
         # Given
+        mock_exists.return_value = True
+        mock_is_dir.return_value = True
         home_view = HomeView()
         path = "/Users/test/Documents"
         home_view.add_folder(path)
@@ -62,13 +70,17 @@ class TestHomeView:
         assert len(home_view.selected_folders) == 1
         assert home_view.selected_folders[0] == path
 
-    def test_remove_folder_existing_path(self):
+    @patch("pathlib.Path.exists")
+    @patch("pathlib.Path.is_dir")
+    def test_remove_folder_existing_path(self, mock_is_dir, mock_exists):
         """
         Given: フォルダがリストに存在するとき
         When: remove_folderメソッドを呼び出す
         Then: フォルダがリストから削除される
         """
         # Given
+        mock_exists.return_value = True
+        mock_is_dir.return_value = True
         home_view = HomeView()
         path1 = "/Users/test/Documents"
         path2 = "/Users/test/Pictures"
@@ -114,13 +126,17 @@ class TestHomeView:
         # Then
         assert len(home_view.selected_folders) == 0
 
-    def test_can_start_scan_with_folders(self):
+    @patch("pathlib.Path.exists")
+    @patch("pathlib.Path.is_dir")
+    def test_can_start_scan_with_folders(self, mock_is_dir, mock_exists):
         """
         Given: フォルダが選択されているとき
         When: can_start_scanメソッドを呼び出す
         Then: Trueが返される
         """
         # Given
+        mock_exists.return_value = True
+        mock_is_dir.return_value = True
         home_view = HomeView()
         home_view.add_folder("/Users/test/Documents")
 

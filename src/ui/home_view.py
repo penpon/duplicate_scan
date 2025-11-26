@@ -131,12 +131,6 @@ class HomeView:
             if not folder_path or folder_path.strip() == "":
                 return False
 
-            # テスト用のパスパターンを許可
-            if folder_path.startswith("/Users/test/") or folder_path.startswith(
-                "/home/test/"
-            ):
-                return not folder_path.endswith(".txt")
-
             # 実際の環境では存在チェックも行う
             try:
                 path = Path(folder_path)
