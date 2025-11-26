@@ -2,7 +2,6 @@
 
 import hashlib
 import tempfile
-from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -158,6 +157,8 @@ class TestHasher:
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             temp_file.write(test_content)
             temp_file_path = temp_file.name
+
+        from datetime import datetime
 
         file_meta = FileMeta(
             path=temp_file_path,

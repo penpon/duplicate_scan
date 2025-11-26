@@ -1,6 +1,7 @@
 """Duplicate group data model."""
 
 from dataclasses import dataclass
+from typing import List
 
 from .file_meta import FileMeta
 
@@ -9,9 +10,5 @@ from .file_meta import FileMeta
 class DuplicateGroup:
     """Group of duplicate files with their total size."""
 
-    files: list[FileMeta]
-
-    @property
-    def total_size(self) -> int:
-        """Calculate total size from all files."""
-        return sum(file.size for file in self.files)
+    files: List[FileMeta]
+    total_size: int

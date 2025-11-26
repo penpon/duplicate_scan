@@ -1,6 +1,7 @@
 """Tests for data models."""
 
 from datetime import datetime
+from typing import List
 
 from src.models.file_meta import FileMeta
 from src.models.duplicate_group import DuplicateGroup
@@ -73,14 +74,15 @@ class TestDuplicateGroup:
             partial_hash="abc123",
             full_hash="def456",
         )
-        files: list[FileMeta] = [file1, file2]
+        files: List[FileMeta] = [file1, file2]
+        total_size = 2048
 
         # When
-        duplicate_group = DuplicateGroup(files=files)
+        duplicate_group = DuplicateGroup(files=files, total_size=total_size)
 
         # Then
         assert duplicate_group.files == files
-        assert duplicate_group.total_size == file1.size + file2.size
+        assert duplicate_group.total_size == total_size
         assert len(duplicate_group.files) == 2
 
     def test_duplicate_group_type_checking(self):
@@ -93,7 +95,7 @@ class TestDuplicateGroup:
             partial_hash="abc123",
             full_hash="def456",
         )
-        duplicate_group = DuplicateGroup(files=[file_meta])
+        duplicate_group = DuplicateGroup(files=[file_meta], total_size=1024)
 
         # When & Then
         assert isinstance(duplicate_group.files, list)
