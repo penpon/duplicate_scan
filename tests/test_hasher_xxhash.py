@@ -185,7 +185,7 @@ class TestHasherXxhash:
         """config指定時は他のパラメータが無視されることを検証"""
         config = ScanConfig(chunk_size=65536, hash_algorithm="xxhash64")
 
-        hasher = Hasher(config=config, chunk_size=1024, hash_algorithm="md5")
+        hasher = Hasher(config=config, chunk_size=8192, hash_algorithm="sha256")
 
         assert hasher.chunk_size == 65536
         assert hasher.hash_algorithm == "xxhash64"
