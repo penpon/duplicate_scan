@@ -28,7 +28,9 @@ class TestHasherXxhash:
         """ScanConfigを使用した初期化テスト（カスタム値）"""
         # Given: カスタムのScanConfig
         config = ScanConfig(
-            chunk_size=32768, hash_algorithm="sha256", parallel_workers=2
+            chunk_size=32768,
+            hash_algorithm="sha256",
+            parallel_workers=2,
         )
 
         # When: ScanConfigでHasherを初期化
