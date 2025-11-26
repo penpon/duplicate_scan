@@ -17,6 +17,9 @@ class MainView(HomeView):
     def __init__(self, page: ft.Page) -> None:
         super().__init__()
         self.page = page
+        # FilePicker はページの overlay に追加しないとダイアログが開かない
+        if self.file_picker not in self.page.overlay:
+            self.page.overlay.append(self.file_picker)
 
     def _on_start_scan_clicked(self, e: ft.ControlEvent) -> None:
         """スキャン開始ボタンがクリックされたときの処理"""
@@ -27,7 +30,7 @@ class MainView(HomeView):
             # 仮の通知
             self.page.snack_bar = ft.SnackBar(
                 content=ft.Text(f"Starting scan of {len(selected_folders)} folders..."),
-                bgcolor=ft.colors.BLUE_600,
+                bgcolor=ft.Colors.BLUE_600,
             )
             self.page.snack_bar.open = True
             self.page.update()

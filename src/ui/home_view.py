@@ -4,6 +4,7 @@
 
 from typing import List, Optional
 from pathlib import Path
+import logging
 
 import flet as ft
 
@@ -40,8 +41,15 @@ class HomeView:
         """
         return ft.Column(
             [
-                ft.Text("Duplicate File Scanner", size=24, weight=ft.FontWeight.BOLD),
-                ft.Text("Select folders to scan for duplicate files", size=16),
+                ft.Text(
+                    "Duplicate File Scanner",
+                    size=24,
+                    weight=ft.FontWeight.BOLD,
+                ),
+                ft.Text(
+                    "Select folders to scan for duplicate files",
+                    size=16,
+                ),
                 ft.Divider(),
                 ft.Row(
                     [
@@ -53,7 +61,7 @@ class HomeView:
                 ft.Text("Selected Folders:", weight=ft.FontWeight.BOLD),
                 ft.Container(
                     content=self.folder_list,
-                    border=ft.border.all(1, ft.colors.OUTLINE),
+                    border=ft.border.all(1, ft.Colors.OUTLINE),
                     border_radius=8,
                     padding=10,
                     margin=ft.margin.only(bottom=20),
@@ -64,8 +72,7 @@ class HomeView:
                     ],
                     alignment=ft.MainAxisAlignment.CENTER,
                 ),
-                # File picker (非表示)
-                self.file_picker,
+                # file_picker is in page.overlay, not here
             ],
             scroll=ft.ScrollMode.AUTO,
             spacing=10,
@@ -149,7 +156,8 @@ class HomeView:
                 leading=ft.Icon(ft.Icons.FOLDER),
                 title=ft.Text(folder),
                 trailing=ft.IconButton(
-                    ft.Icons.DELETE, on_click=lambda _, f=folder: self.remove_folder(f)
+                    ft.Icons.DELETE,
+                    on_click=lambda _, f=folder: self.remove_folder(f),
                 ),
             )
             self.folder_list.controls.append(folder_item)
@@ -165,16 +173,52 @@ class HomeView:
     def _on_add_folder_clicked(self, e: ft.ControlEvent) -> None:
         """Add Folderボタンがクリックされたときの処理"""
         if self.page:
-            self.file_picker.get_directory_path(dialog_title="Select folder to scan")
+            logging.info("Add Folder button clicked - opening directory picker")
+            try:
+                # macOSでのFilePicker問題対応：代替手段を試行
+                self.file_picker.get_directory_path(
+                    dialog_title="Select folder to scan"
+                )
+                logging.info("Directory picker dialog opened")
+
+                # ユーザーへのフィードバック
+                self.page.snack_bar = ft.SnackBar(
+                    content=ft.Text("Opening folder selection dialog..."),
+                    bgcolor=ft.Colors.BLUE_600,
+                )
+                self.page.snack_bar.open = True
+                self.page.update()
+
+            except Exception as ex:
+                logging.error(f"Failed to open directory picker: {ex}")
+                if self.page:
+                    self.page.snack_bar = ft.SnackBar(
+                        content=ft.Text(f"Error: {ex}"),
+                        bgcolor=ft.Colors.RED_600,
+                    )
+                    self.page.snack_bar.open = True
+                    self.page.update()
 
     def _on_folder_picked(self, e: ft.FilePickerResultEvent) -> None:
         """フォルダが選択されたときの処理"""
+        logging.info(f"Folder picker result: path={e.path}")
         if e.path:
             self.add_folder(e.path)
+        else:
+            logging.info("Folder selection cancelled")
 
     def _on_clear_clicked(self, e: ft.ControlEvent) -> None:
         """Clear Allボタンがクリックされたときの処理"""
+        logging.info("Clear All button clicked")
         self.clear_folders()
+        if self.page:
+            # フィードバックを表示
+            self.page.snack_bar = ft.SnackBar(
+                content=ft.Text("All folders cleared"),
+                bgcolor=ft.Colors.GREEN_600,
+            )
+            self.page.snack_bar.open = True
+            self.page.update()
 
     def _on_start_scan_clicked(self, e: ft.ControlEvent) -> None:
         """Start Scanボタンがクリックされたときの処理"""
