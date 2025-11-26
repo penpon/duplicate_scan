@@ -1,6 +1,5 @@
 """Tests for DuplicateDetector."""
 
-import pytest
 from datetime import datetime
 from src.models.file_meta import FileMeta
 from src.services.detector import DuplicateDetector
@@ -48,8 +47,11 @@ class TestDuplicateDetector:
         result = detector.find_duplicates([file1, file2])
         assert result == []
 
-    def test_find_duplicates_same_size_and_partial_hash_different_full_hash(self):
-        """Test that files with same size and partial hash but different full hashes are not grouped."""
+    def test_find_duplicates_same_size_and_partial_hash_different_full_hash(
+        self,
+    ):
+        """Test that files with same size and partial hash but different
+        full hashes are not grouped."""
         detector = DuplicateDetector()
         file1 = FileMeta(
             path="/test/file1.txt",
