@@ -17,20 +17,33 @@ class TestDuplicateDetector:
     def test_find_duplicates_single_file(self):
         """Test that single file returns empty list."""
         detector = DuplicateDetector()
-        file = FileMeta(path="/test/file1.txt", size=100, modified_time=datetime.now())
+        file = FileMeta(
+            path="/test/file1.txt",
+            size=100,
+            modified_time=datetime.now(),
+        )
         result = detector.find_duplicates([file])
         assert result == []
 
     def test_find_duplicates_different_sizes(self):
         """Test that files with different sizes are not grouped."""
         detector = DuplicateDetector()
-        file1 = FileMeta(path="/test/file1.txt", size=100, modified_time=datetime.now())
-        file2 = FileMeta(path="/test/file2.txt", size=200, modified_time=datetime.now())
+        file1 = FileMeta(
+            path="/test/file1.txt",
+            size=100,
+            modified_time=datetime.now(),
+        )
+        file2 = FileMeta(
+            path="/test/file2.txt",
+            size=200,
+            modified_time=datetime.now(),
+        )
         result = detector.find_duplicates([file1, file2])
         assert result == []
 
     def test_find_duplicates_same_size_different_partial_hash(self):
-        """Test that files with same size but different partial hashes are not grouped."""
+        """Test that files with same size but different partial
+        hashes are not grouped."""
         detector = DuplicateDetector()
         file1 = FileMeta(
             path="/test/file1.txt",
