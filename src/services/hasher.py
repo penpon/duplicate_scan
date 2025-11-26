@@ -20,17 +20,25 @@ class Hasher:
             hash_algorithm: 使用するハッシュアルゴリズム。デフォルトはSHA256
         """
         self.chunk_size = chunk_size
-        self.hash_algorithm = hash_algorithm
+        if not isinstance(hash_algorithm, str):
+            raise ValueError("hash_algorithm must be a string")
+
+        normalized_algorithm = hash_algorithm.lower()
+        available_algorithms = {algo.lower() for algo in hashlib.algorithms_available}
+        if normalized_algorithm not in available_algorithms:
+            raise ValueError(f"Unsupported hash algorithm: {hash_algorithm}")
+
+        self.hash_algorithm = normalized_algorithm
 
     def _get_hash_object(self) -> Any:
         """ハッシュオブジェクトを取得する"""
         return hashlib.new(self.hash_algorithm)
 
     def calculate_partial_hash(self, file_path: Union[str, Path]) -> str:
-        """ファイルの部分ハッシュを計算する（最初と最後の4KB）
+        """ファイルの部分ハッシュを計算する（最初と最後のチャンクサイズ分）
 
         ネットワークドライブ上の大きなファイルを効率的に処理するために、
-        ファイル全体ではなく最初と最後のチャンクのみを読み込んでハッシュを計算する。
+        ファイル全体ではなく最初と最後のチャンクサイズ分のみを読み込んでハッシュを計算する。
 
         Args:
             file_path: ファイルパス
@@ -66,15 +74,14 @@ class Hasher:
                 hash_obj.update(first_chunk)
 
                 # 最後のチャンク（ファイルがチャンクサイズより大きい場合のみ）
-                if file_size > self.chunk_size:
-                    f.seek(-self.chunk_size, 2)
-                    last_chunk = f.read(self.chunk_size)
-                    hash_obj.update(last_chunk)
+                f.seek(-self.chunk_size, 2)
+                last_chunk = f.read(self.chunk_size)
+                hash_obj.update(last_chunk)
 
             return hash_obj.hexdigest()
 
-        except (OSError, IOError) as e:
-            raise OSError(f"Failed to read file {file_path}: {e}")
+        except OSError as e:
+            raise OSError(f"Failed to read file {file_path}: {e}") from e
 
     def calculate_full_hash(self, file_path: Union[str, Path]) -> str:
         """ファイルの完全ハッシュを計算する
@@ -107,5 +114,5 @@ class Hasher:
 
             return hash_obj.hexdigest()
 
-        except (OSError, IOError) as e:
-            raise OSError(f"Failed to read file {file_path}: {e}")
+        except OSError as e:
+            raise OSError(f"Failed to read file {file_path}: {e}") from e

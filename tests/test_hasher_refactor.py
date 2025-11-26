@@ -24,6 +24,16 @@ class TestHasherRefactor:
         hasher = Hasher(hash_algorithm="md5")
         assert hasher.hash_algorithm == "md5"
 
+    def test_invalid_hash_algorithm_raises_value_error(self):
+        """無効なハッシュアルゴリズム指定時の例外テスト"""
+        with pytest.raises(ValueError, match="Unsupported hash algorithm"):
+            Hasher(hash_algorithm="invalid_algorithm")
+
+    def test_non_string_hash_algorithm_raises_value_error(self):
+        """非文字列のハッシュアルゴリズム指定時の例外テスト"""
+        with pytest.raises(ValueError, match="hash_algorithm must be a string"):
+            Hasher(hash_algorithm=123)
+
     def test_md5_hash_calculation(self):
         """MD5ハッシュ計算のテスト"""
         # Given: MD5アルゴリズムとテストファイル
@@ -83,7 +93,7 @@ class TestHasherRefactor:
 
     def test_memory_efficiency_large_file(self):
         """大きなファイルでのメモリ効率テスト"""
-        # Given: 1MBのファイル（チャンクサイズ4KBに対して十分に大きい）
+        # Given: 1MBのファイル(チャンクサイズ4KBに対して十分に大きい)
         hasher = Hasher(chunk_size=4096)
         test_content = b"X" * (1024 * 1024)  # 1MB
 
