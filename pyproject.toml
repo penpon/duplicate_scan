@@ -25,6 +25,11 @@ dev = [
 lint.select = [
     "S",  # flake8-bandit (セキュリティチェック)
 ]
+lint.per-file-ignores."tests/*" = ["S101"]  # テストファイルでのassert使用を許可
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -34,7 +39,7 @@ format = "uv run ruff format ."
 lint = "uv run ruff check --fix ."
 type-check = "uv run mypy ."
 test = "uv run pytest -n auto tests/ -v"
-coverage = "uv run pytest -n auto --cov=nook --cov-report=term"
+coverage = "uv run pytest -n auto --cov=src --cov-report=term"
 audit = "uv run pip-audit --ignore-vuln GHSA-f83h-ghpp-7wcc"
 
 check = ["format", "lint", "type-check"]
