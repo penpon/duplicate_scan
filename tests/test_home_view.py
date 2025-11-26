@@ -222,3 +222,33 @@ class TestHomeView:
 
         # Then
         assert result is False
+
+    def test_is_valid_folder_empty_string(self):
+        """
+        Given: 空文字列が提供されたとき
+        When: _is_valid_folderメソッドを呼び出す
+        Then: Falseが返される
+        """
+        # Given
+        home_view = HomeView()
+
+        # When
+        result = home_view._is_valid_folder("")
+
+        # Then
+        assert result is False
+
+    def test_is_valid_folder_whitespace_only(self):
+        """
+        Given: 空白文字列のみが提供されたとき
+        When: _is_valid_folderメソッドを呼び出す
+        Then: Falseが返される
+        """
+        # Given
+        home_view = HomeView()
+
+        # When
+        result = home_view._is_valid_folder("   ")
+
+        # Then
+        assert result is False
