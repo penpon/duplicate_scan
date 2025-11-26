@@ -57,7 +57,7 @@
   - _Requirements: 1_
   - _Prompt: **instruction** Role: Flet Developer | Task: Implement Home View | Context: User needs to select folders to scan | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create `HomeView` control in `src/ui/home_view.py` | Implement folder selection using `FilePicker` | Display list of selected folders | Add "Start Scan" button | Restrictions: Use Flet controls | Success Criteria: User can select folders and proceed to scan | After Implementation: Manual UI check | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
-- [ ] 7. UI実装 - スキャンビュー
+- [x] 7. UI実装 - スキャンビュー
   - File: src/ui/scanning_view.py
   - 進捗表示を作成
   - Purpose: 長時間操作中のフィードバックを表示
