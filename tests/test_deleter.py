@@ -55,7 +55,7 @@ class TestDeleter:
         """Test Deleter can be initialized."""
         deleter = Deleter()
         assert deleter is not None
-        assert deleter.backup_base_dir == Path.cwd()
+        assert deleter.backup_base_dir == (Path.home() / ".duplicate_scan_backups")
 
     def test_deleter_initialization_with_custom_dir(self) -> None:
         """Test Deleter can be initialized with custom backup directory."""

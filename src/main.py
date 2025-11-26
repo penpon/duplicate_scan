@@ -31,7 +31,12 @@ class MainView(HomeView):
         self.page = page
         self.hasher = Hasher()
         self.detector = DuplicateDetector()
-        self.deleter = Deleter()
+
+        # Create explicit backup directory
+        self.backup_dir = Path.home() / ".duplicate_scan_backups"
+        self.backup_dir.mkdir(parents=True, exist_ok=True)
+
+        self.deleter = Deleter(self.backup_dir)
         self.results_view = ResultsView()
         self.cleanup_view = CleanupView()
         self.home_content: ft.Column | None = None
@@ -201,6 +206,17 @@ class MainView(HomeView):
         )
         if result.backup_directory:
             logging.info(f"Backup directory: {result.backup_directory}")
+
+            # Show backup directory to user
+            self.page.snack_bar = ft.SnackBar(
+                content=ft.Text(
+                    f"Files backed up to: {result.backup_directory}",
+                    bgcolor=ft.Colors.BLUE_600,
+                ),
+                duration=10000,  # Show for 10 seconds
+            )
+            self.page.snack_bar.open = True
+            self.page.update()
 
         # CleanupViewを表示
         self._show_cleanup(result)

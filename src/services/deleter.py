@@ -1,6 +1,7 @@
 """Deleter service for safely moving files to a backup directory."""
 
 import shutil
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -30,20 +31,27 @@ class Deleter:
 
         Args:
             backup_base_dir: Base directory for backup folders.
-                Defaults to current working directory.
+                Defaults to user home directory under .duplicate_scan_backups.
         """
-        self.backup_base_dir = backup_base_dir or Path.cwd()
+        if backup_base_dir is None:
+            self.backup_base_dir = Path.home() / ".duplicate_scan_backups"
+        else:
+            self.backup_base_dir = backup_base_dir
+
+        # Ensure backup directory exists
+        self.backup_base_dir.mkdir(parents=True, exist_ok=True)
 
     def _create_backup_directory(self) -> Path:
         """
-        Create a timestamped backup directory.
+        Create a timestamped backup directory with unique identifier.
 
         Returns:
             Path to the created backup directory.
         """
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup_dir = self.backup_base_dir / f"deleted_files_{timestamp}"
-        backup_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        unique_id = str(uuid.uuid4())[:8]
+        backup_dir = self.backup_base_dir / f"deleted_files_{timestamp}_{unique_id}"
+        backup_dir.mkdir(parents=True, exist_ok=False)
         return backup_dir
 
     def _get_unique_filename(self, backup_dir: Path, original_path: Path) -> Path:
