@@ -12,6 +12,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "mypy>=1.18.2",
+    "pip-audit>=2.9.0",
     "poethepoet>=0.38.0",
     "pre-commit>=4.5.0",
     "pytest>=9.0.1",
@@ -31,4 +32,9 @@ ignore_missing_imports = true
 format = "uv run ruff format ."
 lint = "uv run ruff check --fix ."
 type-check = "uv run mypy ."
+test = "uv run pytest -n auto tests/ -v"
+coverage = "uv run pytest -n auto --cov=nook --cov-report=term"
+audit = "uv run pip-audit --ignore-vuln GHSA-f83h-ghpp-7wcc"
+
 check = ["format", "lint", "type-check"]
+quality-check = ["check", "test", "coverage", "audit"]
