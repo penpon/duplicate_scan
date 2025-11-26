@@ -73,7 +73,7 @@
   - _Requirements: 4_
   - _Prompt: **instruction** Role: Flet Developer | Task: Implement Results View | Context: Review and select duplicates for deletion | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create `ResultsView` in `src/ui/results_view.py` | Display list of `DuplicateGroup`s | Show file details and previews | Add checkboxes for selection | Add "Delete Selected" button | Restrictions: Handle large lists efficiently | Success Criteria: User can select files for deletion | After Implementation: Manual UI check | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
-- [ ] 9. 削除ロジック & クリーンアップビューの実装
+- [x] 9. 削除ロジック & クリーンアップビューの実装
   - File: src/services/deleter.py, src/ui/cleanup_view.py
   - 安全な削除と結果サマリーを実装
   - Purpose: ファイルを削除してレポートを表示
