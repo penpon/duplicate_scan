@@ -41,7 +41,7 @@
   - _Requirements: 3_
   - _Prompt: **instruction** Role: Python Developer | Task: Implement Hasher Service | Context: Optimized hashing for large files on network drives | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create `Hasher` class in `src/services/hasher.py` | Implement `calculate_partial_hash` (first/last 4KB) | Implement `calculate_full_hash` | Restrictions: Use `hashlib` (SHA256 recommended) | Optimize for large files | Success Criteria: Correct hash generation and good performance on large files | After Implementation: Create unit tests | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
-- [ ] 5. Duplicate Detectorの実装
+- [-] 5. Duplicate Detectorの実装
   - File: src/services/detector.py
   - 重複をグループ化するロジックを実装
   - Purpose: ハッシュでファイルをグループ化
