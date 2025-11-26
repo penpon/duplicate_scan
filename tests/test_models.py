@@ -57,7 +57,7 @@ class TestDuplicateGroup:
     """Test DuplicateGroup dataclass."""
 
     def test_duplicate_group_creation(self):
-        """Test DuplicateGroup can be created with files and total_size."""
+        """Test DuplicateGroup can be created with files and calculates total_size."""
         # Given
         file1 = FileMeta(
             path="/path/to/file1.txt",
