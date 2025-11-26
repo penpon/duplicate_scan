@@ -109,13 +109,17 @@ class TestHomeView:
         home_view.remove_folder(path)  # エラーが発生しないはず
         assert len(home_view.selected_folders) == 0
 
-    def test_clear_folders(self):
+    @patch("pathlib.Path.exists")
+    @patch("pathlib.Path.is_dir")
+    def test_clear_folders(self, mock_is_dir, mock_exists):
         """
         Given: フォルダがリストに存在するとき
         When: clear_foldersメソッドを呼び出す
         Then: すべてのフォルダが削除される
         """
         # Given
+        mock_exists.return_value = True
+        mock_is_dir.return_value = True
         home_view = HomeView()
         home_view.add_folder("/Users/test/Documents")
         home_view.add_folder("/Users/test/Pictures")
