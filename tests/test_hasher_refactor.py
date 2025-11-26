@@ -68,7 +68,7 @@ class TestHasherRefactor:
         finally:
             Path(temp_file_path).unlink()
 
-    def test_os_error_handling(self):
+    def test_file_not_found_error(self):
         """FileNotFoundErrorハンドリングのテスト"""
         # Given: 存在しないディレクトリ内のファイルパス
         hasher = Hasher()

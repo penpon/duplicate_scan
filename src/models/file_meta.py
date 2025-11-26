@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 
 @dataclass
@@ -12,5 +11,5 @@ class FileMeta:
     path: str
     size: int
     modified_time: datetime
-    partial_hash: Optional[str] = None
-    full_hash: Optional[str] = None
+    partial_hash: str = ""
+    full_hash: str = ""
