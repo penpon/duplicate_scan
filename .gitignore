@@ -37,7 +37,11 @@ htmlcov/
 .spec-workflow/archive/*/
 .spec-workflow/templates/
 .spec-workflow/user-templates/
+.spec-workflow/specs/scan-optimization/
 
 # Build artifacts (Flet)
 *.app
 *.dmg
+
+# Test artifacts
+deleted_files_*/
