@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.models.scan_config import ScanConfig
+from src.models.scan_config import SUPPORTED_HASH_ALGORITHMS, ScanConfig
 
 
 class TestScanConfig:
@@ -87,6 +87,21 @@ class TestScanConfig:
         invalid_workers = [0, -1, 17, 100]
         for workers in invalid_workers:
             with pytest.raises(
-                ValueError, match="parallel_workers must be between 1 and 16"
+                ValueError,
+                match="parallel_workers must be between 1 and 16",
             ):
                 ScanConfig(parallel_workers=workers)
+
+    def test_hash_algorithm_validation_valid(self) -> None:
+        """Test that supported hash algorithms are accepted."""
+        for algorithm in SUPPORTED_HASH_ALGORITHMS:
+            config = ScanConfig(hash_algorithm=algorithm)
+            assert config.hash_algorithm == algorithm
+
+    def test_hash_algorithm_validation_invalid(self) -> None:
+        """Test that unsupported hash algorithms raise ValueError."""
+        with pytest.raises(
+            ValueError,
+            match="hash_algorithm must be one of",
+        ):
+            ScanConfig(hash_algorithm="blake3")
