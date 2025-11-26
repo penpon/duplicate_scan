@@ -7,18 +7,28 @@ to verify the complete user workflow.
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from typing import Generator, List
-from unittest.mock import MagicMock, patch
+from typing import Generator
+from unittest.mock import patch
 
 import pytest
 
-from src.models.duplicate_group import DuplicateGroup
 from src.models.file_meta import FileMeta
 from src.services.deleter import DeleteResult, Deleter
 from src.services.detector import DuplicateDetector
 from src.services.hasher import Hasher
 from src.ui.cleanup_view import CleanupView
 from src.ui.results_view import ResultsView
+
+
+def _create_test_file(path: Path, content: bytes) -> FileMeta:
+    """Create a test file and return its FileMeta."""
+    path.write_bytes(content)
+    stat = path.stat()
+    return FileMeta(
+        path=str(path),
+        size=stat.st_size,
+        modified_time=datetime.fromtimestamp(stat.st_mtime),
+    )
 
 
 class TestResultsViewWithServices:
@@ -45,16 +55,6 @@ class TestResultsViewWithServices:
         """Create a ResultsView instance."""
         return ResultsView()
 
-    def _create_test_file(self, path: Path, content: bytes) -> FileMeta:
-        """Create a test file and return its FileMeta."""
-        path.write_bytes(content)
-        stat = path.stat()
-        return FileMeta(
-            path=str(path),
-            size=stat.st_size,
-            modified_time=datetime.fromtimestamp(stat.st_mtime),
-        )
-
     def test_results_view_displays_detected_duplicates(
         self,
         temp_dir: Path,
@@ -70,8 +70,8 @@ class TestResultsViewWithServices:
         """
         # Given: Create and detect duplicates
         content = b"Duplicate content" * 100
-        file1 = self._create_test_file(temp_dir / "file1.txt", content)
-        file2 = self._create_test_file(temp_dir / "file2.txt", content)
+        file1 = _create_test_file(temp_dir / "file1.txt", content)
+        file2 = _create_test_file(temp_dir / "file2.txt", content)
 
         for f in [file1, file2]:
             f.partial_hash = hasher.calculate_partial_hash(f.path)
@@ -101,8 +101,8 @@ class TestResultsViewWithServices:
         """
         # Given: Create and detect duplicates
         content = b"Test content" * 100
-        file1 = self._create_test_file(temp_dir / "file1.txt", content)
-        file2 = self._create_test_file(temp_dir / "file2.txt", content)
+        file1 = _create_test_file(temp_dir / "file1.txt", content)
+        file2 = _create_test_file(temp_dir / "file2.txt", content)
 
         for f in [file1, file2]:
             f.partial_hash = hasher.calculate_partial_hash(f.path)
@@ -135,8 +135,8 @@ class TestResultsViewWithServices:
         """
         # Given: Create duplicates and select files
         content = b"Test content" * 100
-        file1 = self._create_test_file(temp_dir / "file1.txt", content)
-        file2 = self._create_test_file(temp_dir / "file2.txt", content)
+        file1 = _create_test_file(temp_dir / "file1.txt", content)
+        file2 = _create_test_file(temp_dir / "file2.txt", content)
 
         for f in [file1, file2]:
             f.partial_hash = hasher.calculate_partial_hash(f.path)
@@ -238,8 +238,9 @@ class TestCleanupViewWithDeleter:
 
         cleanup_view.set_done_callback(on_done)
 
-        # When: Simulate done button click
-        cleanup_view._on_done_clicked(None)
+        # When: Simulate done button click via the public button callback
+        assert cleanup_view.done_button.on_click is not None
+        cleanup_view.done_button.on_click(None)
 
         # Then: Callback was called
         assert len(callback_called) == 1
@@ -253,16 +254,6 @@ class TestEndToEndWorkflow:
         """Create a temporary directory for test files."""
         with tempfile.TemporaryDirectory() as tmpdir:
             yield Path(tmpdir)
-
-    def _create_test_file(self, path: Path, content: bytes) -> FileMeta:
-        """Create a test file and return its FileMeta."""
-        path.write_bytes(content)
-        stat = path.stat()
-        return FileMeta(
-            path=str(path),
-            size=stat.st_size,
-            modified_time=datetime.fromtimestamp(stat.st_mtime),
-        )
 
     def test_complete_user_workflow(self, temp_dir: Path) -> None:
         """Test complete user workflow from scan to cleanup.
@@ -280,9 +271,9 @@ class TestEndToEndWorkflow:
 
         # Step 1: Create test files (simulating scan)
         content = b"Duplicate content for E2E test" * 100
-        original = self._create_test_file(temp_dir / "original.txt", content)
-        dup1 = self._create_test_file(temp_dir / "duplicate1.txt", content)
-        dup2 = self._create_test_file(temp_dir / "duplicate2.txt", content)
+        original = _create_test_file(temp_dir / "original.txt", content)
+        dup1 = _create_test_file(temp_dir / "duplicate1.txt", content)
+        dup2 = _create_test_file(temp_dir / "duplicate2.txt", content)
 
         # Step 2: Hash files
         files = [original, dup1, dup2]
@@ -333,8 +324,8 @@ class TestEndToEndWorkflow:
 
         # Create test files
         content = b"Test content" * 100
-        file1 = self._create_test_file(temp_dir / "file1.txt", content)
-        file2 = self._create_test_file(temp_dir / "file2.txt", content)
+        file1 = _create_test_file(temp_dir / "file1.txt", content)
+        file2 = _create_test_file(temp_dir / "file2.txt", content)
 
         for f in [file1, file2]:
             f.partial_hash = hasher.calculate_partial_hash(f.path)
@@ -374,8 +365,8 @@ class TestEndToEndWorkflow:
 
         # Create and detect duplicates
         content = b"Test content" * 100
-        file1 = self._create_test_file(temp_dir / "file1.txt", content)
-        file2 = self._create_test_file(temp_dir / "file2.txt", content)
+        file1 = _create_test_file(temp_dir / "file1.txt", content)
+        file2 = _create_test_file(temp_dir / "file2.txt", content)
 
         for f in [file1, file2]:
             f.partial_hash = hasher.calculate_partial_hash(f.path)
@@ -401,9 +392,9 @@ class TestEndToEndWorkflow:
         results_view = ResultsView()
 
         # Create unique files
-        file1 = self._create_test_file(temp_dir / "file1.txt", b"Content 1" * 100)
-        file2 = self._create_test_file(temp_dir / "file2.txt", b"Content 2" * 100)
-        file3 = self._create_test_file(temp_dir / "file3.txt", b"Content 3" * 100)
+        file1 = _create_test_file(temp_dir / "file1.txt", b"Content 1" * 100)
+        file2 = _create_test_file(temp_dir / "file2.txt", b"Content 2" * 100)
+        file3 = _create_test_file(temp_dir / "file3.txt", b"Content 3" * 100)
 
         for f in [file1, file2, file3]:
             f.partial_hash = hasher.calculate_partial_hash(f.path)

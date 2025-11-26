@@ -18,6 +18,25 @@ from src.services.detector import DuplicateDetector
 from src.services.hasher import Hasher
 
 
+def _create_test_file(path: Path, content: bytes) -> FileMeta:
+    """Create a test file and return its FileMeta.
+
+    Args:
+        path: Path where to create the file.
+        content: Content to write to the file.
+
+    Returns:
+        FileMeta for the created file.
+    """
+    path.write_bytes(content)
+    stat = path.stat()
+    return FileMeta(
+        path=str(path),
+        size=stat.st_size,
+        modified_time=datetime.fromtimestamp(stat.st_mtime),
+    )
+
+
 class TestHasherDetectorIntegration:
     """Integration tests for Hasher and Detector services."""
 
@@ -49,24 +68,6 @@ class TestHasherDetectorIntegration:
         """
         return DuplicateDetector()
 
-    def _create_test_file(self, path: Path, content: bytes) -> FileMeta:
-        """Create a test file and return its FileMeta.
-
-        Args:
-            path: Path where to create the file.
-            content: Content to write to the file.
-
-        Returns:
-            FileMeta for the created file.
-        """
-        path.write_bytes(content)
-        stat = path.stat()
-        return FileMeta(
-            path=str(path),
-            size=stat.st_size,
-            modified_time=datetime.fromtimestamp(stat.st_mtime),
-        )
-
     def test_detect_duplicates_with_real_files(
         self, temp_dir: Path, hasher: Hasher, detector: DuplicateDetector
     ) -> None:
@@ -80,9 +81,10 @@ class TestHasherDetectorIntegration:
         content_a = b"This is duplicate content A" * 100
         content_b = b"This is unique content B" * 100
 
-        file1 = self._create_test_file(temp_dir / "file1.txt", content_a)
-        file2 = self._create_test_file(temp_dir / "file2.txt", content_a)  # duplicate
-        file3 = self._create_test_file(temp_dir / "file3.txt", content_b)  # unique
+        file1 = _create_test_file(temp_dir / "file1.txt", content_a)
+        file2 = _create_test_file(temp_dir / "file2.txt", content_a)
+        # duplicate
+        file3 = _create_test_file(temp_dir / "file3.txt", content_b)  # unique
 
         # When: Calculate hashes for all files
         files = [file1, file2, file3]
@@ -115,16 +117,16 @@ class TestHasherDetectorIntegration:
         content_c = b"Unique content" * 100
 
         # Group A: 2 duplicates
-        file_a1 = self._create_test_file(temp_dir / "a1.txt", content_a)
-        file_a2 = self._create_test_file(temp_dir / "a2.txt", content_a)
+        file_a1 = _create_test_file(temp_dir / "a1.txt", content_a)
+        file_a2 = _create_test_file(temp_dir / "a2.txt", content_a)
 
         # Group B: 3 duplicates
-        file_b1 = self._create_test_file(temp_dir / "b1.txt", content_b)
-        file_b2 = self._create_test_file(temp_dir / "b2.txt", content_b)
-        file_b3 = self._create_test_file(temp_dir / "b3.txt", content_b)
+        file_b1 = _create_test_file(temp_dir / "b1.txt", content_b)
+        file_b2 = _create_test_file(temp_dir / "b2.txt", content_b)
+        file_b3 = _create_test_file(temp_dir / "b3.txt", content_b)
 
         # Unique file
-        file_c = self._create_test_file(temp_dir / "c.txt", content_c)
+        file_c = _create_test_file(temp_dir / "c.txt", content_c)
 
         # When: Hash all files
         files = [file_a1, file_a2, file_b1, file_b2, file_b3, file_c]
@@ -152,9 +154,9 @@ class TestHasherDetectorIntegration:
         Then: No duplicate groups are found
         """
         # Given: Create files with unique content
-        file1 = self._create_test_file(temp_dir / "file1.txt", b"Content 1" * 100)
-        file2 = self._create_test_file(temp_dir / "file2.txt", b"Content 2" * 100)
-        file3 = self._create_test_file(temp_dir / "file3.txt", b"Content 3" * 100)
+        file1 = _create_test_file(temp_dir / "file1.txt", b"Content 1" * 100)
+        file2 = _create_test_file(temp_dir / "file2.txt", b"Content 2" * 100)
+        file3 = _create_test_file(temp_dir / "file3.txt", b"Content 3" * 100)
 
         # When: Hash all files
         files = [file1, file2, file3]
@@ -180,9 +182,9 @@ class TestHasherDetectorIntegration:
         content2 = b"B" * 1000
         content3 = b"C" * 1000
 
-        file1 = self._create_test_file(temp_dir / "file1.txt", content1)
-        file2 = self._create_test_file(temp_dir / "file2.txt", content2)
-        file3 = self._create_test_file(temp_dir / "file3.txt", content3)
+        file1 = _create_test_file(temp_dir / "file1.txt", content1)
+        file2 = _create_test_file(temp_dir / "file2.txt", content2)
+        file3 = _create_test_file(temp_dir / "file3.txt", content3)
 
         # Verify same size
         assert file1.size == file2.size == file3.size
@@ -226,16 +228,6 @@ class TestFullWorkflowIntegration:
         """Create a Deleter instance."""
         return Deleter()
 
-    def _create_test_file(self, path: Path, content: bytes) -> FileMeta:
-        """Create a test file and return its FileMeta."""
-        path.write_bytes(content)
-        stat = path.stat()
-        return FileMeta(
-            path=str(path),
-            size=stat.st_size,
-            modified_time=datetime.fromtimestamp(stat.st_mtime),
-        )
-
     def test_complete_workflow_scan_detect_delete(
         self,
         temp_dir: Path,
@@ -252,9 +244,9 @@ class TestFullWorkflowIntegration:
         # Given: Create duplicate files
         content = b"Duplicate content for deletion test" * 100
 
-        original = self._create_test_file(temp_dir / "original.txt", content)
-        duplicate1 = self._create_test_file(temp_dir / "duplicate1.txt", content)
-        duplicate2 = self._create_test_file(temp_dir / "duplicate2.txt", content)
+        original = _create_test_file(temp_dir / "original.txt", content)
+        duplicate1 = _create_test_file(temp_dir / "duplicate1.txt", content)
+        duplicate2 = _create_test_file(temp_dir / "duplicate2.txt", content)
 
         # When: Hash files
         files = [original, duplicate1, duplicate2]
@@ -296,8 +288,8 @@ class TestFullWorkflowIntegration:
         """
         # Given: Create duplicate files
         content = b"Test content" * 100
-        file1 = self._create_test_file(temp_dir / "file1.txt", content)
-        file2 = self._create_test_file(temp_dir / "file2.txt", content)
+        file1 = _create_test_file(temp_dir / "file1.txt", content)
+        file2 = _create_test_file(temp_dir / "file2.txt", content)
 
         # Hash files
         for f in [file1, file2]:
@@ -318,7 +310,10 @@ class TestFullWorkflowIntegration:
         files_to_delete = [duplicates[0].files[0]]  # Delete one file
 
         with patch("src.services.deleter.send2trash"):
-            deleter.delete_files(files_to_delete, progress_callback=progress_callback)
+            deleter.delete_files(
+                files_to_delete,
+                progress_callback=progress_callback,
+            )
 
         # Then: Progress callback was called
         assert len(progress_calls) == 1
@@ -340,8 +335,8 @@ class TestFullWorkflowIntegration:
         """
         # Given: Create files
         content = b"Test content" * 100
-        file1 = self._create_test_file(temp_dir / "file1.txt", content)
-        file2 = self._create_test_file(temp_dir / "file2.txt", content)
+        file1 = _create_test_file(temp_dir / "file1.txt", content)
+        file2 = _create_test_file(temp_dir / "file2.txt", content)
 
         # Hash files
         for f in [file1, file2]:
@@ -357,7 +352,10 @@ class TestFullWorkflowIntegration:
             if "file1" in path:
                 raise PermissionError("File in use")
 
-        with patch("src.services.deleter.send2trash", side_effect=mock_send2trash):
+        with patch(
+            "src.services.deleter.send2trash",
+            side_effect=mock_send2trash,
+        ):
             result = deleter.delete_files(files_to_delete)
 
         # Then: One success, one failure
@@ -386,20 +384,11 @@ class TestLargeFileHandling:
         """Create a DuplicateDetector instance."""
         return DuplicateDetector()
 
-    def _create_test_file(self, path: Path, content: bytes) -> FileMeta:
-        """Create a test file and return its FileMeta."""
-        path.write_bytes(content)
-        stat = path.stat()
-        return FileMeta(
-            path=str(path),
-            size=stat.st_size,
-            modified_time=datetime.fromtimestamp(stat.st_mtime),
-        )
-
     def test_large_file_partial_hash_optimization(
         self, temp_dir: Path, hasher: Hasher, detector: DuplicateDetector
     ) -> None:
-        """Test that partial hashing correctly identifies large file duplicates.
+        """Test that partial hashing correctly identifies
+        large file duplicates.
 
         Given: Large files (>8KB) with same content
         When: Using partial hash for initial filtering
@@ -409,8 +398,8 @@ class TestLargeFileHandling:
         # 16KB = 4KB + 8KB + 4KB
         large_content = b"A" * 4096 + b"B" * 8192 + b"C" * 4096
 
-        file1 = self._create_test_file(temp_dir / "large1.bin", large_content)
-        file2 = self._create_test_file(temp_dir / "large2.bin", large_content)
+        file1 = _create_test_file(temp_dir / "large1.bin", large_content)
+        file2 = _create_test_file(temp_dir / "large2.bin", large_content)
 
         # When: Hash files
         files = [file1, file2]
@@ -444,8 +433,8 @@ class TestLargeFileHandling:
         content1 = start + middle1 + end
         content2 = start + middle2 + end
 
-        file1 = self._create_test_file(temp_dir / "file1.bin", content1)
-        file2 = self._create_test_file(temp_dir / "file2.bin", content2)
+        file1 = _create_test_file(temp_dir / "file1.bin", content1)
+        file2 = _create_test_file(temp_dir / "file2.bin", content2)
 
         # When: Hash files
         files = [file1, file2]
@@ -482,16 +471,6 @@ class TestEdgeCases:
         """Create a DuplicateDetector instance."""
         return DuplicateDetector()
 
-    def _create_test_file(self, path: Path, content: bytes) -> FileMeta:
-        """Create a test file and return its FileMeta."""
-        path.write_bytes(content)
-        stat = path.stat()
-        return FileMeta(
-            path=str(path),
-            size=stat.st_size,
-            modified_time=datetime.fromtimestamp(stat.st_mtime),
-        )
-
     def test_empty_file_duplicates(
         self, temp_dir: Path, hasher: Hasher, detector: DuplicateDetector
     ) -> None:
@@ -502,8 +481,8 @@ class TestEdgeCases:
         Then: Empty files are grouped as duplicates
         """
         # Given: Create empty files
-        file1 = self._create_test_file(temp_dir / "empty1.txt", b"")
-        file2 = self._create_test_file(temp_dir / "empty2.txt", b"")
+        file1 = _create_test_file(temp_dir / "empty1.txt", b"")
+        file2 = _create_test_file(temp_dir / "empty2.txt", b"")
 
         # When: Hash files
         files = [file1, file2]
@@ -526,9 +505,9 @@ class TestEdgeCases:
         Then: Files are correctly identified as duplicates
         """
         # Given: Create single-byte files
-        file1 = self._create_test_file(temp_dir / "byte1.txt", b"X")
-        file2 = self._create_test_file(temp_dir / "byte2.txt", b"X")
-        file3 = self._create_test_file(temp_dir / "byte3.txt", b"Y")  # different
+        file1 = _create_test_file(temp_dir / "byte1.txt", b"X")
+        file2 = _create_test_file(temp_dir / "byte2.txt", b"X")
+        file3 = _create_test_file(temp_dir / "byte3.txt", b"Y")  # different
 
         # When: Hash files
         files = [file1, file2, file3]
@@ -577,14 +556,14 @@ class TestEdgeCases:
         large_content = b"large content " * 100
 
         # Small duplicates
-        small1 = self._create_test_file(temp_dir / "small1.txt", small_content)
-        small2 = self._create_test_file(temp_dir / "small2.txt", small_content)
+        small1 = _create_test_file(temp_dir / "small1.txt", small_content)
+        small2 = _create_test_file(temp_dir / "small2.txt", small_content)
 
         # Medium unique
-        medium = self._create_test_file(temp_dir / "medium.txt", medium_content)
+        medium = _create_test_file(temp_dir / "medium.txt", medium_content)
 
         # Large unique
-        large = self._create_test_file(temp_dir / "large.txt", large_content)
+        large = _create_test_file(temp_dir / "large.txt", large_content)
 
         # When: Hash all files
         files = [small1, small2, medium, large]
