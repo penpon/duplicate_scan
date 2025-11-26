@@ -11,5 +11,5 @@ class FileMeta:
     path: str
     size: int
     modified_time: datetime
-    partial_hash: str
-    full_hash: str
+    partial_hash: str = ""
+    full_hash: str = ""
