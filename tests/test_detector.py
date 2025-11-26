@@ -22,7 +22,14 @@ class TestDuplicateDetector:
         assert result == []
 
     def test_find_duplicates_single_file(self) -> None:
-        """Test that single file returns empty list."""
+        """Verify that single file input yields no duplicate groups.
+
+        Args:
+            self: Unused; part of unittest-style test signature.
+
+        Returns:
+            None.
+        """
         detector = DuplicateDetector()
         file = FileMeta(
             path="/test/file1.txt",
@@ -133,7 +140,14 @@ class TestDuplicateDetector:
         assert result == []
 
     def test_find_duplicates_exact_duplicates(self) -> None:
-        """Test that exact duplicates are grouped together."""
+        """Verify that exact duplicates are grouped together correctly.
+
+        Args:
+            self: Unused; part of unittest-style test signature.
+
+        Returns:
+            None.
+        """
         # Given: two identical files (same size, partial_hash, full_hash)
         detector = DuplicateDetector()
         file1 = FileMeta(
@@ -160,7 +174,15 @@ class TestDuplicateDetector:
         assert result[0].total_size == 200
 
     def test_find_duplicates_multiple_groups(self) -> None:
-        """Test that multiple duplicate groups are created correctly."""
+        """Verify that multiple independent duplicate groups are handled.
+
+        Args:
+            self: Unused; part of unittest-style test signature.
+
+        Returns:
+            None.
+        """
+        # Given: multiple groups of exact duplicates and unique files
         detector = DuplicateDetector()
         # Group 1: exact duplicates
         file1 = FileMeta(
@@ -201,7 +223,10 @@ class TestDuplicateDetector:
             full_hash="full3",
         )
 
+        # When: running duplicate detection
         result = detector.find_duplicates([file1, file2, file3, file4, file5])
+
+        # Then: exactly two duplicate groups are created
         assert len(result) == 2
 
         # Check first group
