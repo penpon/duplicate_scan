@@ -9,7 +9,6 @@ def test_file_meta_creation():
     """Test FileMeta dataclass creation."""
     # Given: Current timestamp and file metadata
     now = datetime.now()
-
     # When: Creating a FileMeta instance
     file_meta = FileMeta(
         path="/test/file.txt",

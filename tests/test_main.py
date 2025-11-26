@@ -16,7 +16,6 @@ def test_main_function_with_mock_page():
     """Test main function with mock page object."""
     # Given: Mock page object
     mock_page = mock.Mock()
-
     # When: Calling main function with mock page
     # Then: Should not raise any exceptions
     # Note: This test verifies that main function can handle page objects
