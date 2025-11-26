@@ -32,6 +32,9 @@ htmlcov/
 # spec-workflow temporary files
 .spec-workflow/approvals/*/approval_*.json
 .spec-workflow/approvals/*/.snapshots/
+.spec-workflow/archive/*/
+.spec-workflow/templates/
+.spec-workflow/user-templates/
 
 # Build artifacts (Flet)
 *.app
