@@ -49,7 +49,7 @@
   - _Requirements: 3_
   - _Prompt: **instruction** Role: Python Developer | Task: Implement Duplicate Detector | Context: Group files based on size and hash to identify duplicates | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create `DuplicateDetector` class in `src/services/detector.py` | Implement logic: Group by size -> Group by partial hash -> Group by full hash | Restrictions: Efficient memory usage | Success Criteria: Correctly identifies duplicates | After Implementation: Create unit tests | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
-- [-] 6. UI実装 - ホームビュー
+- [x] 6. UI実装 - ホームビュー
   - File: src/ui/home_view.py, src/main.py
   - フォルダ選択画面を作成
   - Purpose: ユーザーがスキャン対象を選択できるようにする
