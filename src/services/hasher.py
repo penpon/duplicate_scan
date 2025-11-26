@@ -37,6 +37,10 @@ class Hasher:
             self.chunk_size = config.chunk_size
             self.hash_algorithm = config.hash_algorithm
         elif isinstance(chunk_size, ScanConfig):
+            if hash_algorithm is not None:
+                raise ValueError(
+                    "Cannot specify hash_algorithm when passing ScanConfig as the first argument"
+                )
             self.chunk_size = chunk_size.chunk_size
             self.hash_algorithm = chunk_size.hash_algorithm
         elif isinstance(chunk_size, int):
@@ -68,8 +72,7 @@ class Hasher:
         """ハッシュオブジェクトを取得する"""
         if self.hash_algorithm == "xxhash64":
             return xxhash.xxh64()
-        else:
-            return hashlib.new(self.hash_algorithm)
+        return hashlib.new(self.hash_algorithm)
 
     def calculate_partial_hash(self, file_path: Union[str, Path]) -> str:
         """ファイルの部分ハッシュを計算する(最初と最後のチャンク)
