@@ -4,7 +4,7 @@ from typing import Callable, Optional
 
 import flet as ft
 
-from ..services.deleter import DeleteResult
+from ..services.deleter import DeleteResult, Deleter
 
 
 class CleanupView:
@@ -165,7 +165,7 @@ class CleanupView:
 
         # Update summary texts
         self.deleted_count_text.value = str(result.total_deleted)
-        self.space_saved_text.value = self._format_size(result.space_saved)
+        self.space_saved_text.value = Deleter.format_size(result.space_saved)
         self.failed_count_text.value = str(result.total_failed)
 
         # Update deleted files list
@@ -207,22 +207,3 @@ class CleanupView:
         """Handle done button click."""
         if self.done_callback:
             self.done_callback()
-
-    def _format_size(self, size_bytes: int) -> str:
-        """
-        Format file size to human-readable string.
-
-        Args:
-            size_bytes: Size in bytes.
-
-        Returns:
-            Formatted size string.
-        """
-        if size_bytes >= 1024 * 1024 * 1024:
-            return f"{size_bytes / (1024 * 1024 * 1024):.1f} GB"
-        elif size_bytes >= 1024 * 1024:
-            return f"{size_bytes / (1024 * 1024):.1f} MB"
-        elif size_bytes >= 1024:
-            return f"{size_bytes / 1024:.1f} KB"
-        else:
-            return f"{size_bytes} B"

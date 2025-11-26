@@ -49,7 +49,7 @@ class Deleter:
                 result.deleted_files.append(file_path)
                 result.total_deleted += 1
                 result.space_saved += file_meta.size
-            except (OSError, Exception) as e:
+            except Exception as e:
                 result.failed_files.append((file_path, str(e)))
                 result.total_failed += 1
 
@@ -58,7 +58,8 @@ class Deleter:
 
         return result
 
-    def format_size(self, size_bytes: int) -> str:
+    @staticmethod
+    def format_size(size_bytes: int) -> str:
         """
         Format file size to human-readable string.
 
