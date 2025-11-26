@@ -2,7 +2,7 @@
 結果ビュー - 重複ファイルのリストと選択インターフェース
 """
 
-from typing import List, Set, Optional, Callable
+from typing import Callable, Dict, List, Optional, Set
 
 import flet as ft
 
@@ -17,6 +17,7 @@ class ResultsView:
         """ResultsViewを初期化する"""
         self.duplicate_groups: List[DuplicateGroup] = []
         self.selected_files: Set[FileMeta] = set()
+        self.file_checkboxes: Dict[FileMeta, ft.Checkbox] = {}
         self.page: Optional[ft.Page] = None
         self.delete_callback: Optional[Callable[[List[FileMeta]], None]] = None
 
@@ -127,6 +128,7 @@ class ResultsView:
     def _update_groups_list(self) -> None:
         """重複グループリストのUIを更新する"""
         self.groups_column.controls.clear()
+        self.file_checkboxes.clear()
 
         if not self.duplicate_groups:
             self.groups_column.controls.append(
@@ -194,6 +196,7 @@ class ResultsView:
             value=file in self.selected_files,
             on_change=lambda _, f=file: self.toggle_file_selection(f),
         )
+        self.file_checkboxes[file] = checkbox
 
         return ft.ListTile(
             leading=checkbox,
@@ -218,15 +221,24 @@ class ResultsView:
 
     def _update_file_checkbox(self, file: FileMeta) -> None:
         """特定ファイルのチェックボックス状態を更新する"""
-        # 実装ではUIツリーを走査して該当チェックボックスを更新
-        # パフォーマンスのため、ここでは簡易実装
-        pass
+        checkbox = self.file_checkboxes.get(file)
+        if not checkbox:
+            return
+
+        is_selected = file in self.selected_files
+        if checkbox.value != is_selected:
+            checkbox.value = is_selected
+            if getattr(checkbox, "page", None):
+                checkbox.update()
 
     def _update_all_checkboxes(self) -> None:
         """すべてのチェックボックス状態を更新する"""
-        # 実装ではUIツリーを走査してすべてのチェックボックスを更新
-        # パフォーマンスのため、ここでは簡易実装
-        pass
+        for file, checkbox in self.file_checkboxes.items():
+            is_selected = file in self.selected_files
+            if checkbox.value != is_selected:
+                checkbox.value = is_selected
+                if getattr(checkbox, "page", None):
+                    checkbox.update()
 
     def _format_file_size(self, size_bytes: int) -> str:
         """
