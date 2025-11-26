@@ -13,7 +13,7 @@ class TestScanConfig:
         config = ScanConfig()
 
         assert config.chunk_size == 65536
-        assert config.hash_algorithm == "xxhash64"
+        assert config.hash_algorithm == "sha256"
         assert config.parallel_workers == 4
         assert config.storage_type == "ssd"
 
