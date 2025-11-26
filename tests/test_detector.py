@@ -1,6 +1,7 @@
 """Tests for DuplicateDetector."""
 
 from datetime import datetime
+from typing import List
 from src.models.file_meta import FileMeta
 from src.services.detector import DuplicateDetector
 
@@ -8,13 +9,20 @@ from src.services.detector import DuplicateDetector
 class TestDuplicateDetector:
     """Test cases for DuplicateDetector."""
 
-    def test_find_duplicates_empty_list(self):
-        """Test that empty input returns empty list."""
+    def test_find_duplicates_empty_list(self) -> None:
+        """Verify that empty input yields no duplicate groups.
+
+        Args:
+            self: Unused; part of unittest-style test signature.
+
+        Returns:
+            None.
+        """
         detector = DuplicateDetector()
         result = detector.find_duplicates([])
         assert result == []
 
-    def test_find_duplicates_single_file(self):
+    def test_find_duplicates_single_file(self) -> None:
         """Test that single file returns empty list."""
         detector = DuplicateDetector()
         file = FileMeta(
@@ -25,7 +33,7 @@ class TestDuplicateDetector:
         result = detector.find_duplicates([file])
         assert result == []
 
-    def test_find_duplicates_different_sizes(self):
+    def test_find_duplicates_different_sizes(self) -> None:
         """Test that files with different sizes are not grouped."""
         detector = DuplicateDetector()
         file1 = FileMeta(
@@ -41,7 +49,7 @@ class TestDuplicateDetector:
         result = detector.find_duplicates([file1, file2])
         assert result == []
 
-    def test_find_duplicates_same_size_different_partial_hash(self):
+    def test_find_duplicates_same_size_different_partial_hash(self) -> None:
         """Test that files with same size but different partial
         hashes are not grouped."""
         detector = DuplicateDetector()
@@ -62,7 +70,7 @@ class TestDuplicateDetector:
 
     def test_find_duplicates_same_size_and_partial_hash_different_full_hash(
         self,
-    ):
+    ) -> None:
         """Test that files with same size and partial hash but different
         full hashes are not grouped."""
         detector = DuplicateDetector()
@@ -83,7 +91,7 @@ class TestDuplicateDetector:
         result = detector.find_duplicates([file1, file2])
         assert result == []
 
-    def test_find_duplicates_same_size_none_partial_hash(self):
+    def test_find_duplicates_same_size_none_partial_hash(self) -> None:
         """Test that files with same size and partial_hash=None
         are not grouped."""
         detector = DuplicateDetector()
@@ -102,7 +110,7 @@ class TestDuplicateDetector:
         result = detector.find_duplicates([file1, file2])
         assert result == []
 
-    def test_find_duplicates_same_size_and_partial_none_full_hash(self):
+    def test_find_duplicates_same_size_and_partial_none_full_hash(self) -> None:
         """Test that files with same size and partial_hash but
         full_hash=None are not grouped."""
         detector = DuplicateDetector()
@@ -123,8 +131,9 @@ class TestDuplicateDetector:
         result = detector.find_duplicates([file1, file2])
         assert result == []
 
-    def test_find_duplicates_exact_duplicates(self):
+    def test_find_duplicates_exact_duplicates(self) -> None:
         """Test that exact duplicates are grouped together."""
+        # Given: two identical files (same size, partial_hash, full_hash)
         detector = DuplicateDetector()
         file1 = FileMeta(
             path="/test/file1.txt",
@@ -140,12 +149,16 @@ class TestDuplicateDetector:
             partial_hash="hash1",
             full_hash="full1",
         )
+
+        # When: running duplicate detection
         result = detector.find_duplicates([file1, file2])
+
+        # Then: they are grouped together in a single DuplicateGroup
         assert len(result) == 1
         assert len(result[0].files) == 2
         assert result[0].total_size == 200
 
-    def test_find_duplicates_multiple_groups(self):
+    def test_find_duplicates_multiple_groups(self) -> None:
         """Test that multiple duplicate groups are created correctly."""
         detector = DuplicateDetector()
         # Group 1: exact duplicates
@@ -198,7 +211,7 @@ class TestDuplicateDetector:
         group2 = next(g for g in result if g.total_size == 400)
         assert len(group2.files) == 2
 
-    def test_find_duplicates_three_same_files(self):
+    def test_find_duplicates_three_same_files(self) -> None:
         """Test that three identical files are grouped together."""
         detector = DuplicateDetector()
         file1 = FileMeta(

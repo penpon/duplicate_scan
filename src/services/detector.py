@@ -1,6 +1,6 @@
 """Duplicate Detector service."""
 
-from typing import List, Dict, Iterable, Callable, TypeVar
+from typing import List, Dict, Iterable, Callable, TypeVar, Optional
 from collections.abc import Hashable
 
 from src.models.file_meta import FileMeta
