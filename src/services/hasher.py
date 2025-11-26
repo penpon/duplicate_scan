@@ -101,7 +101,8 @@ class Hasher:
                     # Read first chunk
                     first_chunk = file.read(self.chunk_size)
                     if len(first_chunk) < self.chunk_size:
-                        # File was truncated during reading, hash what we got
+                        # File was truncated during reading,
+                        # hash what we got
                         hasher = self._get_hasher()
                         hasher.update(first_chunk)
                         return hasher.hexdigest()
@@ -143,7 +144,8 @@ class Hasher:
 
         Raises:
             FileNotFoundError: If the file does not exist
-            PermissionError: If the file cannot be read due to permissions
+            PermissionError: If the file cannot be read due to
+                permissions
             OSError: If there's an I/O error reading the file
         """
         path = Path(file_path)

@@ -5,4 +5,44 @@ Setting up
 Analyzing
 Reviewing
 
+============================================================================
+File: src/models/duplicate_group.py
+Line: 9 to 14
+Type: refactor_suggestion
+
+Prompt for AI Agent:
+In src/models/duplicate_group.py around lines 9 to 14, replace the dataclass field total_size with a computed property to avoid inconsistency and update type hints to modern Python 3.9+ syntax: change List[FileMeta] to list[FileMeta], remove the total_size attribute from the dataclass, and add a total_size @property that returns sum(f.size for f in self.files) (or sum(getattr(f, "size", 0) for f in self.files) if size might be missing); keep the dataclass for files only and ensure imports/type hints reflect Python 3.12.
+
+
+
+============================================================================
+File: tests/unit/test_hasher.py
+Line: 165 to 166
+Type: potential_issue
+
+Prompt for AI Agent:
+In tests/unit/test_hasher.py around lines 165 to 166 the test uses brittle hard-coded timing assertions (partial_time < 1.0 and full_time < 2.0) that can fail on slow CI or loaded machines; remove these strict time bounds or relax them (e.g., increase thresholds substantially), or alternatively skip timing-based assertions on CI/heavy-load environments by detecting CI via env vars, or replace with a non-timing correctness check (compare output hashes) or a relative/performance-smoke check (e.g., assert partial_time < full_time * N) to make the test stable.
+
+
+
+============================================================================
+File: tests/unit/test_hasher.py
+Line: 149
+Type: potential_issue
+
+Prompt for AI Agent:
+In tests/unit/test_hasher.py around line 149, the test currently does an inline "import time" inside the function; move that import to the top of the module with the other imports and remove the inline import statement from the test body so the module-level imports contain time and the test code no longer imports it locally.
+
+
+
+============================================================================
+File: .github/workflows/tests.yml
+Line: 17 to 37
+Type: potential_issue
+
+Prompt for AI Agent:
+.github/workflows/tests.yml lines 17-37: the workflow uses outdated action versions; update uses: entries to the latest stable releases specified in the review — change actions/checkout@v4.1.0 to actions/checkout@v6.0.0 and astral-sh/setup-uv@v3.0.0 to astral-sh/setup-uv@v7.1.0; after updating consider pinning to the corresponding commit SHAs (replace mutable tags with full commit@SHA) for stronger supply-chain security and ensure the workflow still runs by testing the updated workflow in CI.
+
+
+
 Review completed ✔

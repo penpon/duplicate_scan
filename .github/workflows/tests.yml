@@ -16,13 +16,13 @@ jobs:
 
     steps:
     - name: チェックアウト
-      uses: actions/checkout@v4.1.0
+      uses: actions/checkout@v6.0.0
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         ref: ${{ github.head_ref || github.ref_name }}  # PRブランチまたは現在のブランチ
 
     - name: uv のセットアップ
-      uses: astral-sh/setup-uv@v3.0.0
+      uses: astral-sh/setup-uv@v7.1.0
 
     - name: キャッシュの復元
       uses: actions/cache@v4
