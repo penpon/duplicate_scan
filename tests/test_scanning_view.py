@@ -142,5 +142,5 @@ class TestScanningView:
         assert view.status_text.value == "エラー発生"
         assert view.current_file_text.value == "/test/problem.jpg"
         assert view.files_processed_text.value == "3 / 10"
-        assert view.error_text.visible is True
+        assert view.error_text.visible
         assert view.error_text.value == "エラー: ファイルが見つかりません"
