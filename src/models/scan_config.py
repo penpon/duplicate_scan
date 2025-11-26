@@ -23,14 +23,16 @@ class ScanConfig:
         self._validate_chunk_size(self.chunk_size)
         self._validate_parallel_workers(self.parallel_workers)
 
-    def _validate_chunk_size(self, value: int) -> None:
+    @staticmethod
+    def _validate_chunk_size(value: int) -> None:
         """Validate chunk_size is a power of 2 and >= 4096."""
-        if not self._is_power_of_2(value):
+        if not ScanConfig._is_power_of_2(value):
             raise ValueError("chunk_size must be a power of 2")
         if value < MIN_CHUNK_SIZE:
             raise ValueError(f"chunk_size must be at least {MIN_CHUNK_SIZE}")
 
-    def _validate_parallel_workers(self, value: int) -> None:
+    @staticmethod
+    def _validate_parallel_workers(value: int) -> None:
         """Validate parallel_workers is between 1 and 16."""
         if not (MIN_PARALLEL_WORKERS <= value <= MAX_PARALLEL_WORKERS):
             raise ValueError(
