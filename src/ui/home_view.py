@@ -132,12 +132,9 @@ class HomeView:
                 return False
 
             # 実際の環境では存在チェックも行う
-            try:
-                path = Path(folder_path)
-                return path.exists() and path.is_dir()
-            except (OSError, PermissionError):
-                return False
-        except Exception:
+            path = Path(folder_path)
+            return path.exists() and path.is_dir()
+        except (OSError, PermissionError, Exception):
             return False
 
     def _update_folder_list(self) -> None:

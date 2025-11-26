@@ -3,8 +3,7 @@ HomeViewのテストモジュール
 """
 
 import pytest
-from unittest.mock import Mock, patch
-from pathlib import Path
+from unittest.mock import patch
 
 from src.ui.home_view import HomeView
 

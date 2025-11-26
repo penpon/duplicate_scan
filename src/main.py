@@ -1,5 +1,6 @@
 """Duplicate file scanner application built with Flet."""
 
+import logging
 import flet as ft
 from src.ui.home_view import HomeView
 
@@ -16,14 +17,13 @@ class MainView(HomeView):
         selected_folders = self.selected_folders
         if selected_folders and self.page:
             # TODO: スキャン画面に遷移する処理を実装
-            print(f"Scanning folders: {selected_folders}")
+            logging.info(f"Scanning folders: {selected_folders}")
             # 仮の通知
-            snack_bar = ft.SnackBar(
+            self.page.snack_bar = ft.SnackBar(
                 content=ft.Text(f"Starting scan of {len(selected_folders)} folders..."),
                 bgcolor=ft.colors.BLUE_600,
             )
-            self.page.overlay.append(snack_bar)
-            snack_bar.open = True
+            self.page.snack_bar.open = True
             self.page.update()
 
 
