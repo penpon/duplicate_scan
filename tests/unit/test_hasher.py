@@ -3,7 +3,6 @@
 import hashlib
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
@@ -29,7 +28,8 @@ class TestHasher:
             # When: Calculate partial hash
             result = self.hasher.calculate_partial_hash(temp_file_path)
 
-            # Then: Should match SHA256 of entire file (since file is smaller than 8KB)
+            # Then: Should match SHA256 of entire file
+            # (since file is smaller than 8KB)
             expected = hashlib.sha256(content).hexdigest()
             assert result == expected
         finally:
@@ -51,7 +51,8 @@ class TestHasher:
             result = self.hasher.calculate_partial_hash(temp_file_path)
 
             # Then: Should match SHA256 of first 4KB + last 4KB
-            expected_content = content_4kb + content_4kb  # First 4KB + Last 4KB
+            expected_content = content_4kb + content_4kb  # First 4KB +
+            # Last 4KB
             expected = hashlib.sha256(expected_content).hexdigest()
             assert result == expected
         finally:
@@ -129,7 +130,8 @@ class TestHasher:
             partial_hash = self.hasher.calculate_partial_hash(temp_file_path)
             full_hash = self.hasher.calculate_full_hash(temp_file_path)
 
-            # Then: They should be different (because middle content affects full hash)
+            # Then: They should be different
+            # (because middle content affects full hash)
             assert partial_hash != full_hash
         finally:
             Path(temp_file_path).unlink()
@@ -157,7 +159,7 @@ class TestHasher:
             # Then: Both should complete and return valid hashes
             assert len(partial_hash) == 64  # SHA256 hex length
             assert len(full_hash) == 64  # SHA256 hex length
-            assert partial_hash != full_hash  # Should be different for this content
+            assert partial_hash != full_hash  # Should be different
 
             # Performance sanity check (should complete quickly)
             assert partial_time < 1.0  # Partial hash should be fast

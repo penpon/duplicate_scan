@@ -12,17 +12,21 @@ from typing import Union
 
 class Hasher:
     """
-    Service for calculating file hashes optimized for large files on network drives.
+    Service for calculating file hashes optimized for large files
+    on network drives.
 
     Features:
-    - Partial hashing using first and last 4KB for quick duplicate detection
+    - Partial hashing using first and last 4KB for quick duplicate
+      detection
     - Full hashing for definitive verification
     - Memory-efficient chunked reading for large files
     - Comprehensive error handling
 
     Attributes:
-        chunk_size (int): Size of chunks to read (4KB default for partial hashing)
-        read_buffer_size (int): Buffer size for full file hashing (64KB for performance)
+        chunk_size (int): Size of chunks to read (4KB default for
+        partial hashing)
+        read_buffer_size (int): Buffer size for full file hashing
+        (64KB for performance)
     """
 
     def __init__(self, chunk_size: int = 4096, read_buffer_size: int = 65536) -> None:
@@ -30,8 +34,10 @@ class Hasher:
         Initialize the hasher service.
 
         Args:
-            chunk_size: Size of chunks for partial hashing in bytes (default: 4KB)
-            read_buffer_size: Buffer size for full file hashing in bytes (default: 64KB)
+            chunk_size: Size of chunks for partial hashing in bytes
+            (default: 4KB)
+            read_buffer_size: Buffer size for full file hashing in
+            bytes (default: 64KB)
         """
         self.chunk_size = chunk_size
         self.read_buffer_size = read_buffer_size
@@ -83,8 +89,8 @@ class Hasher:
                         file.seek(-self.chunk_size, 2)
                         last_chunk = file.read(self.chunk_size)
                     except OSError:
-                        # If seeking fails (can happen with some network files),
-                        # fall back to full hash
+                        # If seeking fails (can happen with some
+                        # network files), fall back to full hash
                         file.seek(0)
                         hash_sha256 = hashlib.sha256()
                         while chunk := file.read(self.read_buffer_size):
