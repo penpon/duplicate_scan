@@ -4,8 +4,7 @@ ResultsViewのテスト
 
 import pytest
 from datetime import datetime
-from unittest.mock import Mock, MagicMock
-from pathlib import Path
+from unittest.mock import Mock
 
 import flet as ft
 

@@ -3,7 +3,6 @@
 """
 
 from typing import List, Set, Optional, Callable
-from datetime import datetime
 
 import flet as ft
 
@@ -200,7 +199,8 @@ class ResultsView:
             leading=checkbox,
             title=ft.Text(file.path, size=14),
             subtitle=ft.Text(
-                f"{self._format_file_size(file.size)} • {file.modified_time.strftime('%Y-%m-%d %H:%M')}",
+                f"{self._format_file_size(file.size)} • "
+                f"{file.modified_time.strftime('%Y-%m-%d %H:%M')}",
                 size=12,
             ),
             trailing=ft.Icon(
