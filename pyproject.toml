@@ -31,4 +31,4 @@ ignore_missing_imports = true
 format = "uv run ruff format ."
 lint = "uv run ruff check --fix ."
 type-check = "uv run mypy ."
-check = ["format", "lint", "type-check"]
+quality-check = ["format", "lint", "type-check"]
