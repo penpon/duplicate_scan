@@ -15,6 +15,7 @@ dev = [
     "poethepoet>=0.38.0",
     "pre-commit>=4.5.0",
     "pytest>=9.0.1",
+    "pytest-cov>=6.0.0",
     "ruff>=0.14.6",
 ]
 
@@ -23,14 +24,8 @@ lint.select = [
     "S",  # flake8-bandit (セキュリティチェック)
 ]
 
-[tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101"]  # テストファイルでのassert使用を許可
-
 [tool.mypy]
 ignore_missing_imports = true
-
-[tool.pytest.ini_options]
-pythonpath = ["src"]
 
 [tool.poe.tasks]
 format = "uv run ruff format ."
