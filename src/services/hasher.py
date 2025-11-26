@@ -7,7 +7,7 @@ Uses SHA256 for cryptographic-strength hashing.
 
 import hashlib
 from pathlib import Path
-from typing import Union
+from typing import Union, Any
 
 
 class Hasher:
@@ -21,15 +21,22 @@ class Hasher:
     - Full hashing for definitive verification
     - Memory-efficient chunked reading for large files
     - Comprehensive error handling
+    - Customizable hash algorithms
 
     Attributes:
         chunk_size (int): Size of chunks to read (4KB default for
         partial hashing)
         read_buffer_size (int): Buffer size for full file hashing
         (64KB for performance)
+        hash_algorithm (str): Hash algorithm to use (default: sha256)
     """
 
-    def __init__(self, chunk_size: int = 4096, read_buffer_size: int = 65536) -> None:
+    def __init__(
+        self,
+        chunk_size: int = 4096,
+        read_buffer_size: int = 65536,
+        hash_algorithm: str = "sha256",
+    ) -> None:
         """
         Initialize the hasher service.
 
@@ -38,9 +45,20 @@ class Hasher:
             (default: 4KB)
             read_buffer_size: Buffer size for full file hashing in
             bytes (default: 64KB)
+            hash_algorithm: Hash algorithm to use (default: sha256)
         """
         self.chunk_size = chunk_size
         self.read_buffer_size = read_buffer_size
+        self.hash_algorithm = hash_algorithm
+
+    def _get_hasher(self) -> Any:
+        """Get hash algorithm constructor."""
+        try:
+            return getattr(hashlib, self.hash_algorithm)()
+        except AttributeError as e:
+            raise ValueError(
+                f"Unsupported hash algorithm: {self.hash_algorithm}"
+            ) from e
 
     def calculate_partial_hash(self, file_path: Union[str, Path]) -> str:
         """
@@ -53,7 +71,7 @@ class Hasher:
             file_path: Path to the file to hash
 
         Returns:
-            SHA256 hash as 64-character hexadecimal string
+            Hash as hexadecimal string (length depends on algorithm)
 
         Raises:
             FileNotFoundError: If the file does not exist
@@ -76,13 +94,17 @@ class Hasher:
             with open(path, "rb") as file:
                 if file_size <= self.chunk_size * 2:  # 8KB or less, hash entire file
                     content = file.read()
-                    return hashlib.sha256(content).hexdigest()
+                    hasher = self._get_hasher()
+                    hasher.update(content)
+                    return hasher.hexdigest()
                 else:
                     # Read first chunk
                     first_chunk = file.read(self.chunk_size)
                     if len(first_chunk) < self.chunk_size:
                         # File was truncated during reading, hash what we got
-                        return hashlib.sha256(first_chunk).hexdigest()
+                        hasher = self._get_hasher()
+                        hasher.update(first_chunk)
+                        return hasher.hexdigest()
 
                     # Seek to last chunk and read it
                     try:
@@ -92,14 +114,15 @@ class Hasher:
                         # If seeking fails (can happen with some network files),
                         # fall back to full hash
                         file.seek(0)
-                        hash_sha256 = hashlib.sha256()
+                        hasher = self._get_hasher()
                         while chunk := file.read(self.read_buffer_size):
-                            hash_sha256.update(chunk)
-                        return hash_sha256.hexdigest()
+                            hasher.update(chunk)
+                        return hasher.hexdigest()
 
                     # Hash first + last chunks
-                    combined_content = first_chunk + last_chunk
-                    return hashlib.sha256(combined_content).hexdigest()
+                    hasher = self._get_hasher()
+                    hasher.update(first_chunk + last_chunk)
+                    return hasher.hexdigest()
         except PermissionError as e:
             raise PermissionError(f"Permission denied reading file: {file_path}") from e
         except OSError as e:
@@ -116,7 +139,7 @@ class Hasher:
             file_path: Path to the file to hash
 
         Returns:
-            SHA256 hash as 64-character hexadecimal string
+            Hash as hexadecimal string (length depends on algorithm)
 
         Raises:
             FileNotFoundError: If the file does not exist
@@ -130,15 +153,15 @@ class Hasher:
         if not path.is_file():
             raise OSError(f"Path is not a file: {file_path}")
 
-        hash_sha256 = hashlib.sha256()
+        hasher = self._get_hasher()
 
         try:
             with open(path, "rb") as file:
                 while chunk := file.read(self.read_buffer_size):
-                    hash_sha256.update(chunk)
+                    hasher.update(chunk)
         except PermissionError as e:
             raise PermissionError(f"Permission denied reading file: {file_path}") from e
         except OSError as e:
             raise OSError(f"I/O error reading file: {file_path}") from e
 
-        return hash_sha256.hexdigest()
+        return hasher.hexdigest()
