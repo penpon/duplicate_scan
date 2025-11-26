@@ -95,8 +95,6 @@ class Hasher:
                         hash_sha256 = hashlib.sha256()
                         while chunk := file.read(self.read_buffer_size):
                             hash_sha256.update(chunk)
-                            if len(hash_sha256.hexdigest()) > 64:
-                                break
                         return hash_sha256.hexdigest()
 
                     # Hash first + last chunks
