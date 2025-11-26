@@ -7,14 +7,14 @@
 3. **レビュー & PR (`/rabbit-rocket`)**: CodeRabbitレビューとPR作成
 4. **クリーンアップ (`/sync`)**: マージ後のクリーンアップ
 
-- [ ] 1. プロジェクト初期化
+- [x] 1. プロジェクト初期化
   - File: pyproject.toml, src/main.py
   - uvプロジェクトの初期化と依存関係のインストール（flet, send2trash）
   - 基本的なプロジェクト構造の作成
   - Purpose: 開発環境のセットアップ
   - _Leverage: tech.md_
   - _Requirements: Non-functional_
-  - _Prompt: **instruction** Role: Python開発者 | Task: uvでプロジェクトを初期化し依存関係をインストール | Context: 新規Fletプロジェクト | Implementation Instructions: `uv init`を実行 | `flet` `send2trash` `pytest` `ruff` `mypy`を追加 | `src`ディレクトリを作成 | Restrictions: Python 3.10+を使用 | Success Criteria: `uv run flet run src/main.py`が動作する | After Implementation: 環境を検証_
+  - _Prompt: **instruction** Role: Python Developer | Task: Initialize project with uv and install dependencies | Context: Setting up a new Flet project for Duplicate File Remover | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Run `uv init` to initialize the project | Add dependencies: `flet`, `send2trash`, `pytest`, `ruff`, `mypy` | Create `src` directory structure | Ensure `pyproject.toml` is correctly configured | Restrictions: Use Python 3.10+ | Success Criteria: `uv run flet run src/main.py` runs successfully | After Implementation: Verify environment setup | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
 - [ ] 2. データモデルの実装
   - File: src/models/file_meta.py, src/models/duplicate_group.py
@@ -22,7 +22,7 @@
   - Purpose: ファイル処理用のデータ構造を定義
   - _Leverage: design.md (Data Models)_
   - _Requirements: All_
-  - _Prompt: **instruction** Role: Python開発者 | Task: データモデルを実装 | Context: ファイルメタデータ用の構造化データが必要 | Implementation Instructions: design.mdで定義された`FileMeta`と`DuplicateGroup`データクラスを作成 | Restrictions: `@dataclass`を使用 | Success Criteria: モデルをインスタンス化でき型チェックが通る | After Implementation: mypyを実行_
+  - _Prompt: **instruction** Role: Python Developer | Task: Implement data models | Context: Structured data needed for file metadata and duplicate groups | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create `FileMeta` dataclass in `src/models/file_meta.py` with fields: path, size, modified_time, partial_hash, full_hash | Create `DuplicateGroup` dataclass in `src/models/duplicate_group.py` with fields: files (List[FileMeta]), total_size | Restrictions: Use `@dataclass` | Success Criteria: Models can be instantiated and pass type checking | After Implementation: Run mypy | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
 - [ ] 3. Scannerサービスの実装
   - File: src/services/scanner.py
@@ -31,7 +31,7 @@
   - Purpose: 対象ファイルを検出
   - _Leverage: design.md (Scanner Service)_
   - _Requirements: 1, 2_
-  - _Prompt: **instruction** Role: Python開発者 | Task: Scannerサービスを実装 | Context: ローカルおよびネットワークドライブをスキャンする必要がある | Implementation Instructions: `scan_directories`メソッドを持つ`Scanner`クラスを作成 | `pathlib`を使用 | 拡張子でフィルタリング（jpg, png, mp4など） | Restrictions: 権限エラーを適切に処理 | Success Criteria: 有効なファイルのFileMetaリストを返す | After Implementation: ユニットテストを作成_
+  - _Prompt: **instruction** Role: Python Developer | Task: Implement Scanner Service | Context: Need to scan local and network drives for target files | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create `Scanner` class in `src/services/scanner.py` | Implement `scan_directories` method using `pathlib` | Add filtering for image/video extensions (jpg, png, mp4, mov, etc.) | Handle permission errors gracefully | Restrictions: Must handle network paths correctly | Success Criteria: Returns list of FileMeta objects for valid files | After Implementation: Create unit tests | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
 - [ ] 4. Hasherサービスの実装
   - File: src/services/hasher.py
@@ -39,7 +39,7 @@
   - Purpose: 効率的に重複を識別
   - _Leverage: design.md (Hasher Service)_
   - _Requirements: 3_
-  - _Prompt: **instruction** Role: Python開発者 | Task: Hasherサービスを実装 | Context: ネットワークドライブ上の大きなファイルに最適化 | Implementation Instructions: `Hasher`クラスを作成 | `calculate_hash`は部分ハッシュ（先頭/末尾4KB）をサポート | Restrictions: `hashlib`を使用 | Success Criteria: 正しいハッシュ生成、大きなファイルでのパフォーマンス | After Implementation: ユニットテストを作成_
+  - _Prompt: **instruction** Role: Python Developer | Task: Implement Hasher Service | Context: Optimized hashing for large files on network drives | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create `Hasher` class in `src/services/hasher.py` | Implement `calculate_partial_hash` (first/last 4KB) | Implement `calculate_full_hash` | Restrictions: Use `hashlib` (SHA256 recommended) | Optimize for large files | Success Criteria: Correct hash generation and good performance on large files | After Implementation: Create unit tests | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
 - [ ] 5. Duplicate Detectorの実装
   - File: src/services/detector.py
@@ -47,7 +47,7 @@
   - Purpose: ハッシュでファイルをグループ化
   - _Leverage: design.md (Duplicate Detector)_
   - _Requirements: 3_
-  - _Prompt: **instruction** Role: Python開発者 | Task: Duplicate Detectorを実装 | Context: サイズとハッシュに基づいてファイルをグループ化 | Implementation Instructions: `DuplicateDetector`クラスを作成 | ロジック: サイズでグループ化 → 部分ハッシュでグループ化 → 完全ハッシュでグループ化 | Restrictions: 効率的なメモリ使用 | Success Criteria: 重複を正しく識別 | After Implementation: ユニットテストを作成_
+  - _Prompt: **instruction** Role: Python Developer | Task: Implement Duplicate Detector | Context: Group files based on size and hash to identify duplicates | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create `DuplicateDetector` class in `src/services/detector.py` | Implement logic: Group by size -> Group by partial hash -> Group by full hash | Restrictions: Efficient memory usage | Success Criteria: Correctly identifies duplicates | After Implementation: Create unit tests | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
 - [ ] 6. UI実装 - ホームビュー
   - File: src/ui/home_view.py, src/main.py
@@ -55,7 +55,7 @@
   - Purpose: ユーザーがスキャン対象を選択できるようにする
   - _Leverage: design.md (UI Manager)_
   - _Requirements: 1_
-  - _Prompt: **instruction** Role: Flet開発者 | Task: ホームビューを実装 | Context: フォルダ選択 | Implementation Instructions: `HomeView`コントロールを作成 | フォルダを選択するボタン（`FilePicker`を使用）を追加 | 選択されたフォルダをリスト表示 | 「スキャン開始」ボタンを追加 | Restrictions: Fletコントロールを使用 | Success Criteria: フォルダを選択して次に進める | After Implementation: 手動UIチェック_
+  - _Prompt: **instruction** Role: Flet Developer | Task: Implement Home View | Context: User needs to select folders to scan | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create `HomeView` control in `src/ui/home_view.py` | Implement folder selection using `FilePicker` | Display list of selected folders | Add "Start Scan" button | Restrictions: Use Flet controls | Success Criteria: User can select folders and proceed to scan | After Implementation: Manual UI check | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
 - [ ] 7. UI実装 - スキャンビュー
   - File: src/ui/scanning_view.py
@@ -63,7 +63,7 @@
   - Purpose: 長時間操作中のフィードバックを表示
   - _Leverage: design.md (UI Manager)_
   - _Requirements: Non-functional (Usability)_
-  - _Prompt: **instruction** Role: Flet開発者 | Task: スキャンビューを実装 | Context: 進捗を表示 | Implementation Instructions: `ScanningView`を作成 | `ProgressBar`、ステータステキストを追加 | Scanner/Hasherの更新と統合 | Restrictions: レスポンシブなUI | Success Criteria: スキャン中に更新される | After Implementation: 手動UIチェック_
+  - _Prompt: **instruction** Role: Flet Developer | Task: Implement Scanning View | Context: Display progress during long-running scan operations | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create `ScanningView` in `src/ui/scanning_view.py` | Add `ProgressBar` and status text | Integrate with Scanner/Hasher updates | Restrictions: Responsive UI | Success Criteria: UI updates in real-time during scan | After Implementation: Manual UI check | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
 - [ ] 8. UI実装 - 結果ビュー
   - File: src/ui/results_view.py
@@ -71,7 +71,7 @@
   - Purpose: 削除するファイルをレビューして選択
   - _Leverage: design.md (UI Manager)_
   - _Requirements: 4_
-  - _Prompt: **instruction** Role: Flet開発者 | Task: 結果ビューを実装 | Context: 重複をレビュー | Implementation Instructions: `ResultsView`を作成 | `DuplicateGroup`をリスト表示 | ファイル詳細/プレビューを表示 | 選択用のチェックボックス | 「選択を削除」ボタン | Restrictions: 大きなリストを効率的に処理 | Success Criteria: ファイルを選択できる | After Implementation: 手動UIチェック_
+  - _Prompt: **instruction** Role: Flet Developer | Task: Implement Results View | Context: Review and select duplicates for deletion | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create `ResultsView` in `src/ui/results_view.py` | Display list of `DuplicateGroup`s | Show file details and previews | Add checkboxes for selection | Add "Delete Selected" button | Restrictions: Handle large lists efficiently | Success Criteria: User can select files for deletion | After Implementation: Manual UI check | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
 - [ ] 9. 削除ロジック & クリーンアップビューの実装
   - File: src/services/deleter.py, src/ui/cleanup_view.py
@@ -79,7 +79,7 @@
   - Purpose: ファイルを削除してレポートを表示
   - _Leverage: design.md (Deletion Service)_
   - _Requirements: 4_
-  - _Prompt: **instruction** Role: Python開発者 | Task: 削除とクリーンアップビューを実装 | Context: 安全な削除 | Implementation Instructions: `send2trash`を使用 | 結果を表示する`CleanupView`を作成（削除数、節約容量） | Restrictions: エラーを処理（例: ファイルが使用中） | Success Criteria: ファイルがゴミ箱に移動される | After Implementation: ゴミ箱の内容を確認_
+  - _Prompt: **instruction** Role: Python Developer | Task: Implement Deletion Logic and Cleanup View | Context: Safe deletion of selected files | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Implement deletion using `send2trash` in `src/services/deleter.py` | Create `CleanupView` in `src/ui/cleanup_view.py` to show results (deleted count, space saved) | Restrictions: Handle errors (e.g., file in use) | Success Criteria: Files are moved to trash, summary is correct | After Implementation: Verify trash contents | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
 - [ ] 10. 統合 & E2Eテスト
   - File: tests/integration/test_flow.py
@@ -87,5 +87,5 @@
   - Purpose: すべてのコンポーネントが連携して動作することを確認
   - _Leverage: design.md (Testing Strategy)_
   - _Requirements: All_
-  - _Prompt: **instruction** Role: QAエンジニア | Task: 統合テストを実施 | Context: アプリ全体のフロー | Implementation Instructions: Scanner、Hasher、Detectorを組み合わせた統合テストを作成 | ローカル/ネットワークドライブ上のダミーファイルで手動E2Eテストを実施 | Restrictions: なし | Success Criteria: すべてのテストが合格、アプリが期待通りに動作 | After Implementation: 最終レポート_
+  - _Prompt: **instruction** Role: QA Engineer | Task: Perform Integration and E2E Tests | Context: Verify the entire application flow | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create integration tests combining Scanner, Hasher, and Detector | Perform manual E2E tests with dummy files on local/network drives | Restrictions: None | Success Criteria: All tests pass, app works as expected | After Implementation: Final Report | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
