@@ -24,7 +24,7 @@
   - _Requirements: All_
   - _Prompt: **instruction** Role: Python Developer | Task: Implement data models | Context: Structured data needed for file metadata and duplicate groups | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create `FileMeta` dataclass in `src/models/file_meta.py` with fields: path, size, modified_time, partial_hash, full_hash | Create `DuplicateGroup` dataclass in `src/models/duplicate_group.py` with fields: files (List[FileMeta]), total_size | Restrictions: Use `@dataclass` | Success Criteria: Models can be instantiated and pass type checking | After Implementation: Run mypy | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
-- [ ] 3. Scannerサービスの実装
+- [-] 3. Scannerサービスの実装
   - File: src/services/scanner.py
   - 再帰的ディレクトリスキャンの実装
   - 画像/動画拡張子のフィルタリングを追加
