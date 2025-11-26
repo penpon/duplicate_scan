@@ -4,6 +4,11 @@ import logging
 import flet as ft
 from src.ui.home_view import HomeView
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
 
 class MainView(HomeView):
     """メインビュー - HomeViewを拡張してスキャン開始処理を実装"""
