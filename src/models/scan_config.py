@@ -1,6 +1,6 @@
 """Scan configuration data model."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Literal
 
 # Constants for validation
@@ -34,7 +34,8 @@ class ScanConfig:
         """Validate parallel_workers is between 1 and 16."""
         if not (MIN_PARALLEL_WORKERS <= value <= MAX_PARALLEL_WORKERS):
             raise ValueError(
-                f"parallel_workers must be between {MIN_PARALLEL_WORKERS} and {MAX_PARALLEL_WORKERS}"
+                f"parallel_workers must be between "
+                f"{MIN_PARALLEL_WORKERS} and {MAX_PARALLEL_WORKERS}"
             )
 
     @staticmethod

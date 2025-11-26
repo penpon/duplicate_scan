@@ -1,7 +1,6 @@
 """Tests for ScanConfig dataclass."""
 
 import pytest
-from typing import Literal
 
 from src.models.scan_config import ScanConfig
 
