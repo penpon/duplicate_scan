@@ -1,0 +1,26 @@
+[project]
+name = "duplicate-scan"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18.2",
+    "poethepoet>=0.38.0",
+    "pre-commit>=4.5.0",
+    "ruff>=0.14.6",
+]
+
+[tool.ruff]
+select = [
+    "S",  # flake8-bandit (セキュリティチェック)
+]
+
+[tool.poe.tasks]
+format = "uv run ruff format ."
+lint = "uv run ruff check --fix ."
+type-check = "uv run mypy ."
+check = ["format", "lint", "type-check"]
