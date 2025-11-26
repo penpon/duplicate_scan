@@ -61,7 +61,7 @@ class CleanupView:
                                     ft.Text("Files Deleted", size=14),
                                     self.deleted_count_text,
                                 ],
-                                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                horizontal_alignment=(ft.CrossAxisAlignment.CENTER),
                             ),
                             ft.VerticalDivider(width=40),
                             ft.Column(
@@ -69,7 +69,7 @@ class CleanupView:
                                     ft.Text("Space Saved", size=14),
                                     self.space_saved_text,
                                 ],
-                                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                horizontal_alignment=(ft.CrossAxisAlignment.CENTER),
                             ),
                         ],
                         alignment=ft.MainAxisAlignment.CENTER,
