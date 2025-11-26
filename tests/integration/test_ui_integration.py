@@ -238,7 +238,7 @@ class TestEndToEndWorkflow:
         # Setup: Create services and views
         hasher = Hasher()
         detector = DuplicateDetector()
-        deleter = Deleter()
+        deleter = Deleter(backup_base_dir=temp_dir)
         results_view = ResultsView()
         cleanup_view = CleanupView()
 
@@ -270,13 +270,17 @@ class TestEndToEndWorkflow:
         selected = results_view.get_selected_files()
         assert len(selected) == 2, "Should have 2 files selected"
 
-        # Step 6: Delete selected files
-        with patch("src.services.deleter.send2trash") as mock_trash:
-            result = deleter.delete_files(selected)
+        # Step 6: Delete selected files (moves to backup directory)
+        result = deleter.delete_files(selected)
 
-            assert result.total_deleted == 2
-            assert result.total_failed == 0
-            assert mock_trash.call_count == 2
+        assert result.total_deleted == 2
+        assert result.total_failed == 0
+        assert result.backup_directory is not None
+
+        # Verify files were moved to backup
+        backup_dir = Path(result.backup_directory)
+        assert backup_dir.exists()
+        assert len(list(backup_dir.iterdir())) == 2
 
         # Step 7: Display results in CleanupView
         cleanup_view.set_result(result)
@@ -296,7 +300,7 @@ class TestEndToEndWorkflow:
         # Setup
         hasher = Hasher()
         detector = DuplicateDetector()
-        deleter = Deleter()
+        deleter = Deleter(backup_base_dir=temp_dir)
         cleanup_view = CleanupView()
 
         # Create test files
@@ -311,12 +315,18 @@ class TestEndToEndWorkflow:
         duplicates = detector.find_duplicates([file1, file2])
         files_to_delete = duplicates[0].files
 
-        # Simulate partial failure
-        def mock_send2trash(path: str) -> None:
-            if "file1" in path:
-                raise PermissionError("File locked")
+        # Simulate partial failure by making one file unreadable
+        import shutil
 
-        with patch("src.services.deleter.send2trash", side_effect=mock_send2trash):
+        original_move = shutil.move
+
+        def mock_shutil_move(src: str, dst: str) -> None:
+            if "file1" in src:
+                raise PermissionError("File locked")
+            # Actually move the file for successful cases
+            original_move(src, dst)
+
+        with patch("src.services.deleter.shutil.move", side_effect=mock_shutil_move):
             result = deleter.delete_files(files_to_delete)
 
         # Verify results

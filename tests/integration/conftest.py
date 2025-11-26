@@ -33,9 +33,9 @@ def detector() -> DuplicateDetector:
 
 
 @pytest.fixture
-def deleter() -> Deleter:
-    """Create a Deleter instance."""
-    return Deleter()
+def deleter(temp_dir: Path) -> Deleter:
+    """Create a Deleter instance with temp_dir as backup base."""
+    return Deleter(backup_base_dir=temp_dir)
 
 
 @pytest.fixture

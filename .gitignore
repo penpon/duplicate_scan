@@ -8,6 +8,7 @@ wheels/
 .python-version
 worktree/
 .coderabbit_review_*
+deleted_files_*
 
 # Virtual environments
 .venv

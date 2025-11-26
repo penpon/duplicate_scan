@@ -207,15 +207,19 @@ class TestFullWorkflowIntegration:
         files_to_delete = [f for f in duplicates[0].files if "duplicate" in f.path]
         assert len(files_to_delete) == 2
 
-        # Delete with mocked send2trash
-        with patch("src.services.deleter.send2trash") as mock_trash:
-            result = deleter.delete_files(files_to_delete)
+        # Delete files (moves to backup directory)
+        result = deleter.delete_files(files_to_delete)
 
-            # Then: Verify deletion results
-            assert result.total_deleted == 2
-            assert result.total_failed == 0
-            assert len(result.deleted_files) == 2
-            assert mock_trash.call_count == 2
+        # Then: Verify deletion results
+        assert result.total_deleted == 2
+        assert result.total_failed == 0
+        assert len(result.deleted_files) == 2
+        assert result.backup_directory is not None
+
+        # Verify files were moved to backup
+        backup_dir = Path(result.backup_directory)
+        assert backup_dir.exists()
+        assert len(list(backup_dir.iterdir())) == 2
 
     def test_workflow_with_progress_callback(
         self,
@@ -254,11 +258,10 @@ class TestFullWorkflowIntegration:
         # When: Delete with progress callback
         files_to_delete = [duplicates[0].files[0]]  # Delete one file
 
-        with patch("src.services.deleter.send2trash"):
-            deleter.delete_files(
-                files_to_delete,
-                progress_callback=progress_callback,
-            )
+        deleter.delete_files(
+            files_to_delete,
+            progress_callback=progress_callback,
+        )
 
         # Then: Progress callback was called
         assert len(progress_calls) == 1
@@ -294,13 +297,18 @@ class TestFullWorkflowIntegration:
         files_to_delete = duplicates[0].files
 
         # When: Delete with one failure
-        def mock_send2trash(path: str) -> None:
-            if "file1" in path:
+        import shutil
+
+        original_move = shutil.move
+
+        def mock_shutil_move(src: str, dst: str) -> None:
+            if "file1" in src:
                 raise PermissionError("File in use")
+            original_move(src, dst)
 
         with patch(
-            "src.services.deleter.send2trash",
-            side_effect=mock_send2trash,
+            "src.services.deleter.shutil.move",
+            side_effect=mock_shutil_move,
         ):
             result = deleter.delete_files(files_to_delete)
 

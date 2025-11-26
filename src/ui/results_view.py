@@ -29,6 +29,12 @@ class ResultsView:
             disabled=True,
             icon=ft.Icons.DELETE,
         )
+        self.select_all_duplicates_button = ft.ElevatedButton(
+            "Select All Duplicates",
+            on_click=self._on_select_all_duplicates_clicked,
+            icon=ft.Icons.SELECT_ALL,
+            tooltip="Keep oldest file, select others for deletion",
+        )
 
     def build(self) -> ft.Column:
         """
@@ -42,18 +48,25 @@ class ResultsView:
                 ft.Text("Scan Results", size=24, weight=ft.FontWeight.BOLD),
                 ft.Text("Select files to delete", size=16),
                 ft.Divider(),
-                self.groups_column,
-                ft.Divider(),
                 ft.Row(
                     [
-                        self.delete_button,
+                        self.select_all_duplicates_button,
                         ft.ElevatedButton(
                             "Clear Selection",
                             on_click=self._on_clear_selection_clicked,
                             icon=ft.Icons.CLEAR,
                         ),
                     ],
-                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                    alignment=ft.MainAxisAlignment.START,
+                    spacing=10,
+                ),
+                self.groups_column,
+                ft.Divider(),
+                ft.Row(
+                    [
+                        self.delete_button,
+                    ],
+                    alignment=ft.MainAxisAlignment.CENTER,
                 ),
             ],
             scroll=ft.ScrollMode.AUTO,
@@ -166,7 +179,8 @@ class ResultsView:
                             leading=ft.Icon(ft.Icons.FOLDER_OPEN),
                             title=ft.Text(f"{len(group.files)} files"),
                             subtitle=ft.Text(
-                                f"Total size: {self._format_file_size(group.total_size)}"
+                                f"Total size: "
+                                f"{self._format_file_size(group.total_size)}"
                             ),
                         ),
                         ft.Container(
@@ -266,3 +280,35 @@ class ResultsView:
     def _on_clear_selection_clicked(self, e: Optional[ft.ControlEvent]) -> None:
         """選択クリアボタンがクリックされたときの処理"""
         self.clear_selection()
+
+    def _on_select_all_duplicates_clicked(self, e: Optional[ft.ControlEvent]) -> None:
+        """全重複ファイル選択ボタンがクリックされたときの処理
+
+        各グループで最も古いファイル（オリジナル）を残し、
+        他のファイルを削除対象として選択する
+        """
+        self.select_all_duplicates()
+
+    def select_all_duplicates(self) -> None:
+        """各グループで最も古いファイルを残し、他を選択する"""
+        self.selected_files.clear()
+
+        for group in self.duplicate_groups:
+            if len(group.files) < 2:
+                continue
+
+            # 最も古いファイル（オリジナル）を特定
+            sorted_files = sorted(group.files, key=lambda f: f.modified_time)
+            original = sorted_files[0]
+
+            # オリジナル以外を選択
+            for file in group.files:
+                if file != original:
+                    self.selected_files.add(file)
+
+        # UI更新
+        self._update_delete_button()
+        self._update_all_checkboxes()
+
+        if self.page:
+            self.page.update()
