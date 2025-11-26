@@ -89,12 +89,14 @@ class Hasher:
                         file.seek(-self.chunk_size, 2)
                         last_chunk = file.read(self.chunk_size)
                     except OSError:
-                        # If seeking fails (can happen with some
-                        # network files), fall back to full hash
+                        # If seeking fails (can happen with some network files),
+                        # fall back to full hash
                         file.seek(0)
                         hash_sha256 = hashlib.sha256()
                         while chunk := file.read(self.read_buffer_size):
                             hash_sha256.update(chunk)
+                            if len(hash_sha256.hexdigest()) > 64:
+                                break
                         return hash_sha256.hexdigest()
 
                     # Hash first + last chunks
