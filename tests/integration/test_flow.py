@@ -4,10 +4,9 @@ Tests the integration of Hasher, Detector, and Deleter services
 to verify the entire application flow works correctly.
 """
 
-import tempfile
 from datetime import datetime
 from pathlib import Path
-from typing import Generator, List
+from typing import List
 from unittest.mock import patch
 
 import pytest
@@ -18,58 +17,15 @@ from src.services.detector import DuplicateDetector
 from src.services.hasher import Hasher
 
 
-def _create_test_file(path: Path, content: bytes) -> FileMeta:
-    """Create a test file and return its FileMeta.
-
-    Args:
-        path: Path where to create the file.
-        content: Content to write to the file.
-
-    Returns:
-        FileMeta for the created file.
-    """
-    path.write_bytes(content)
-    stat = path.stat()
-    return FileMeta(
-        path=str(path),
-        size=stat.st_size,
-        modified_time=datetime.fromtimestamp(stat.st_mtime),
-    )
-
-
 class TestHasherDetectorIntegration:
     """Integration tests for Hasher and Detector services."""
 
-    @pytest.fixture
-    def temp_dir(self) -> Generator[Path, None, None]:
-        """Create a temporary directory for test files.
-
-        Yields:
-            Path to the temporary directory.
-        """
-        with tempfile.TemporaryDirectory() as tmpdir:
-            yield Path(tmpdir)
-
-    @pytest.fixture
-    def hasher(self) -> Hasher:
-        """Create a Hasher instance.
-
-        Returns:
-            Hasher instance with default settings.
-        """
-        return Hasher()
-
-    @pytest.fixture
-    def detector(self) -> DuplicateDetector:
-        """Create a DuplicateDetector instance.
-
-        Returns:
-            DuplicateDetector instance.
-        """
-        return DuplicateDetector()
-
     def test_detect_duplicates_with_real_files(
-        self, temp_dir: Path, hasher: Hasher, detector: DuplicateDetector
+        self,
+        temp_dir: Path,
+        hasher: Hasher,
+        detector: DuplicateDetector,
+        _create_test_file,
     ) -> None:
         """Test duplicate detection with actual files on disk.
 
@@ -83,7 +39,7 @@ class TestHasherDetectorIntegration:
 
         file1 = _create_test_file(temp_dir / "file1.txt", content_a)
         file2 = _create_test_file(temp_dir / "file2.txt", content_a)
-        # duplicate
+        # duplicate of file1
         file3 = _create_test_file(temp_dir / "file3.txt", content_b)  # unique
 
         # When: Calculate hashes for all files
@@ -103,7 +59,11 @@ class TestHasherDetectorIntegration:
         assert str(temp_dir / "file2.txt") in paths, "file2 should be in group"
 
     def test_detect_multiple_duplicate_groups(
-        self, temp_dir: Path, hasher: Hasher, detector: DuplicateDetector
+        self,
+        temp_dir: Path,
+        hasher: Hasher,
+        detector: DuplicateDetector,
+        _create_test_file,
     ) -> None:
         """Test detection of multiple independent duplicate groups.
 
@@ -145,7 +105,11 @@ class TestHasherDetectorIntegration:
         assert group_sizes == [2, 3]
 
     def test_no_duplicates_with_different_content(
-        self, temp_dir: Path, hasher: Hasher, detector: DuplicateDetector
+        self,
+        temp_dir: Path,
+        hasher: Hasher,
+        detector: DuplicateDetector,
+        _create_test_file,
     ) -> None:
         """Test that files with different content are not grouped.
 
@@ -169,7 +133,11 @@ class TestHasherDetectorIntegration:
         assert len(duplicates) == 0
 
     def test_same_size_different_content(
-        self, temp_dir: Path, hasher: Hasher, detector: DuplicateDetector
+        self,
+        temp_dir: Path,
+        hasher: Hasher,
+        detector: DuplicateDetector,
+        _create_test_file,
     ) -> None:
         """Test files with same size but different content.
 
@@ -203,37 +171,13 @@ class TestHasherDetectorIntegration:
 class TestFullWorkflowIntegration:
     """Integration tests for the complete workflow including deletion."""
 
-    @pytest.fixture
-    def temp_dir(self) -> Generator[Path, None, None]:
-        """Create a temporary directory for test files.
-
-        Yields:
-            Path to the temporary directory.
-        """
-        with tempfile.TemporaryDirectory() as tmpdir:
-            yield Path(tmpdir)
-
-    @pytest.fixture
-    def hasher(self) -> Hasher:
-        """Create a Hasher instance."""
-        return Hasher()
-
-    @pytest.fixture
-    def detector(self) -> DuplicateDetector:
-        """Create a DuplicateDetector instance."""
-        return DuplicateDetector()
-
-    @pytest.fixture
-    def deleter(self) -> Deleter:
-        """Create a Deleter instance."""
-        return Deleter()
-
     def test_complete_workflow_scan_detect_delete(
         self,
         temp_dir: Path,
         hasher: Hasher,
         detector: DuplicateDetector,
         deleter: Deleter,
+        _create_test_file,
     ) -> None:
         """Test the complete workflow from scanning to deletion.
 
@@ -279,6 +223,7 @@ class TestFullWorkflowIntegration:
         hasher: Hasher,
         detector: DuplicateDetector,
         deleter: Deleter,
+        _create_test_file,
     ) -> None:
         """Test workflow with progress callback during deletion.
 
@@ -326,6 +271,7 @@ class TestFullWorkflowIntegration:
         hasher: Hasher,
         detector: DuplicateDetector,
         deleter: Deleter,
+        _create_test_file,
     ) -> None:
         """Test workflow handles deletion errors gracefully.
 
@@ -368,24 +314,12 @@ class TestFullWorkflowIntegration:
 class TestLargeFileHandling:
     """Integration tests for handling large files efficiently."""
 
-    @pytest.fixture
-    def temp_dir(self) -> Generator[Path, None, None]:
-        """Create a temporary directory for test files."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            yield Path(tmpdir)
-
-    @pytest.fixture
-    def hasher(self) -> Hasher:
-        """Create a Hasher instance."""
-        return Hasher()
-
-    @pytest.fixture
-    def detector(self) -> DuplicateDetector:
-        """Create a DuplicateDetector instance."""
-        return DuplicateDetector()
-
     def test_large_file_partial_hash_optimization(
-        self, temp_dir: Path, hasher: Hasher, detector: DuplicateDetector
+        self,
+        temp_dir: Path,
+        hasher: Hasher,
+        detector: DuplicateDetector,
+        _create_test_file,
     ) -> None:
         """Test that partial hashing correctly identifies
         large file duplicates.
@@ -399,6 +333,7 @@ class TestLargeFileHandling:
         large_content = b"A" * 4096 + b"B" * 8192 + b"C" * 4096
 
         file1 = _create_test_file(temp_dir / "large1.bin", large_content)
+        # duplicate of file1
         file2 = _create_test_file(temp_dir / "large2.bin", large_content)
 
         # When: Hash files
@@ -416,7 +351,11 @@ class TestLargeFileHandling:
         assert len(duplicates[0].files) == 2
 
     def test_large_files_same_partial_different_full(
-        self, temp_dir: Path, hasher: Hasher, detector: DuplicateDetector
+        self,
+        temp_dir: Path,
+        hasher: Hasher,
+        detector: DuplicateDetector,
+        _create_test_file,
     ) -> None:
         """Test files with same partial hash but different full hash.
 
@@ -455,24 +394,12 @@ class TestLargeFileHandling:
 class TestEdgeCases:
     """Integration tests for edge cases and error handling."""
 
-    @pytest.fixture
-    def temp_dir(self) -> Generator[Path, None, None]:
-        """Create a temporary directory for test files."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            yield Path(tmpdir)
-
-    @pytest.fixture
-    def hasher(self) -> Hasher:
-        """Create a Hasher instance."""
-        return Hasher()
-
-    @pytest.fixture
-    def detector(self) -> DuplicateDetector:
-        """Create a DuplicateDetector instance."""
-        return DuplicateDetector()
-
     def test_empty_file_duplicates(
-        self, temp_dir: Path, hasher: Hasher, detector: DuplicateDetector
+        self,
+        temp_dir: Path,
+        hasher: Hasher,
+        detector: DuplicateDetector,
+        _create_test_file,
     ) -> None:
         """Test detection of duplicate empty files.
 
@@ -496,7 +423,11 @@ class TestEdgeCases:
         assert len(duplicates[0].files) == 2
 
     def test_single_byte_files(
-        self, temp_dir: Path, hasher: Hasher, detector: DuplicateDetector
+        self,
+        temp_dir: Path,
+        hasher: Hasher,
+        detector: DuplicateDetector,
+        _create_test_file,
     ) -> None:
         """Test detection of single-byte file duplicates.
 
@@ -520,7 +451,11 @@ class TestEdgeCases:
         assert len(duplicates) == 1
         assert len(duplicates[0].files) == 2
 
-    def test_file_not_found_during_hash(self, temp_dir: Path, hasher: Hasher) -> None:
+    def test_file_not_found_during_hash(
+        self,
+        temp_dir: Path,
+        hasher: Hasher,
+    ) -> None:
         """Test handling of missing files during hashing.
 
         Given: A FileMeta pointing to a non-existent file
@@ -542,7 +477,11 @@ class TestEdgeCases:
             hasher.calculate_full_hash(file_meta.path)
 
     def test_mixed_file_sizes(
-        self, temp_dir: Path, hasher: Hasher, detector: DuplicateDetector
+        self,
+        temp_dir: Path,
+        hasher: Hasher,
+        detector: DuplicateDetector,
+        _create_test_file,
     ) -> None:
         """Test detection with mixed file sizes.
 

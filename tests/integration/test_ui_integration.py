@@ -4,15 +4,11 @@ Tests the integration of UI views with backend services
 to verify the complete user workflow.
 """
 
-import tempfile
-from datetime import datetime
 from pathlib import Path
-from typing import Generator
 from unittest.mock import patch
 
 import pytest
 
-from src.models.file_meta import FileMeta
 from src.services.deleter import DeleteResult, Deleter
 from src.services.detector import DuplicateDetector
 from src.services.hasher import Hasher
@@ -20,35 +16,8 @@ from src.ui.cleanup_view import CleanupView
 from src.ui.results_view import ResultsView
 
 
-def _create_test_file(path: Path, content: bytes) -> FileMeta:
-    """Create a test file and return its FileMeta."""
-    path.write_bytes(content)
-    stat = path.stat()
-    return FileMeta(
-        path=str(path),
-        size=stat.st_size,
-        modified_time=datetime.fromtimestamp(stat.st_mtime),
-    )
-
-
 class TestResultsViewWithServices:
     """Integration tests for ResultsView with backend services."""
-
-    @pytest.fixture
-    def temp_dir(self) -> Generator[Path, None, None]:
-        """Create a temporary directory for test files."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            yield Path(tmpdir)
-
-    @pytest.fixture
-    def hasher(self) -> Hasher:
-        """Create a Hasher instance."""
-        return Hasher()
-
-    @pytest.fixture
-    def detector(self) -> DuplicateDetector:
-        """Create a DuplicateDetector instance."""
-        return DuplicateDetector()
 
     @pytest.fixture
     def results_view(self) -> ResultsView:
@@ -61,6 +30,7 @@ class TestResultsViewWithServices:
         hasher: Hasher,
         detector: DuplicateDetector,
         results_view: ResultsView,
+        _create_test_file,
     ) -> None:
         """Test ResultsView correctly displays detected duplicates.
 
@@ -92,6 +62,7 @@ class TestResultsViewWithServices:
         hasher: Hasher,
         detector: DuplicateDetector,
         results_view: ResultsView,
+        _create_test_file,
     ) -> None:
         """Test file selection in ResultsView.
 
@@ -126,6 +97,7 @@ class TestResultsViewWithServices:
         hasher: Hasher,
         detector: DuplicateDetector,
         results_view: ResultsView,
+        _create_test_file,
     ) -> None:
         """Test clearing selection in ResultsView.
 
@@ -223,7 +195,10 @@ class TestCleanupViewWithDeleter:
         assert cleanup_view.failed_count_text.value == "1"
         assert cleanup_view.failed_section.visible is True
 
-    def test_cleanup_view_done_callback(self, cleanup_view: CleanupView) -> None:
+    def test_cleanup_view_done_callback(
+        self,
+        cleanup_view: CleanupView,
+    ) -> None:
         """Test CleanupView done callback is triggered.
 
         Given: A done callback set on view
@@ -249,13 +224,11 @@ class TestCleanupViewWithDeleter:
 class TestEndToEndWorkflow:
     """End-to-end tests simulating complete user workflows."""
 
-    @pytest.fixture
-    def temp_dir(self) -> Generator[Path, None, None]:
-        """Create a temporary directory for test files."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            yield Path(tmpdir)
-
-    def test_complete_user_workflow(self, temp_dir: Path) -> None:
+    def test_complete_user_workflow(
+        self,
+        temp_dir: Path,
+        _create_test_file,
+    ) -> None:
         """Test complete user workflow from scan to cleanup.
 
         Given: A directory with duplicate files
@@ -309,7 +282,11 @@ class TestEndToEndWorkflow:
         cleanup_view.set_result(result)
         assert cleanup_view.deleted_count_text.value == "2"
 
-    def test_workflow_with_partial_failures(self, temp_dir: Path) -> None:
+    def test_workflow_with_partial_failures(
+        self,
+        temp_dir: Path,
+        _create_test_file,
+    ) -> None:
         """Test workflow handles partial deletion failures.
 
         Given: Files where some deletions will fail
@@ -351,7 +328,11 @@ class TestEndToEndWorkflow:
         assert cleanup_view.failed_section.visible is True
         assert cleanup_view.failed_count_text.value == "1"
 
-    def test_workflow_empty_selection(self, temp_dir: Path) -> None:
+    def test_workflow_empty_selection(
+        self,
+        temp_dir: Path,
+        _create_test_file,
+    ) -> None:
         """Test workflow with no files selected.
 
         Given: Duplicate files detected
@@ -379,7 +360,11 @@ class TestEndToEndWorkflow:
         assert len(results_view.get_selected_files()) == 0
         assert results_view.delete_button.disabled is True
 
-    def test_workflow_no_duplicates_found(self, temp_dir: Path) -> None:
+    def test_workflow_no_duplicates_found(
+        self,
+        temp_dir: Path,
+        _create_test_file,
+    ) -> None:
         """Test workflow when no duplicates are found.
 
         Given: Directory with unique files only
