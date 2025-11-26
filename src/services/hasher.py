@@ -31,25 +31,23 @@ class Hasher:
             hash_algorithm: 使用するハッシュアルゴリズム。デフォルトはSHA256。
             config: ScanConfigオブジェクト。指定された場合は他のパラメータを無視。
         """
-        scan_config: Optional[ScanConfig] = None
-        chunk_size_value: Optional[int] = None
-
         if config is not None:
             if not isinstance(config, ScanConfig):
                 raise ValueError("config must be a ScanConfig object")
-            scan_config = config
+            self.chunk_size = config.chunk_size
+            self.hash_algorithm = config.hash_algorithm
         elif isinstance(chunk_size, ScanConfig):
-            scan_config = chunk_size
+            self.chunk_size = chunk_size.chunk_size
+            self.hash_algorithm = chunk_size.hash_algorithm
         elif isinstance(chunk_size, int):
-            chunk_size_value = chunk_size
+            self.chunk_size = chunk_size
+            self.hash_algorithm = (
+                hash_algorithm if hash_algorithm is not None else "sha256"
+            )
         elif chunk_size is not None:
             raise ValueError("chunk_size must be an int or ScanConfig")
-
-        if scan_config is not None:
-            self.chunk_size = scan_config.chunk_size
-            self.hash_algorithm = scan_config.hash_algorithm
         else:
-            self.chunk_size = chunk_size_value if chunk_size_value is not None else 4096
+            self.chunk_size = 4096
             self.hash_algorithm = (
                 hash_algorithm if hash_algorithm is not None else "sha256"
             )

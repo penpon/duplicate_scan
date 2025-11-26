@@ -11,7 +11,14 @@ MAX_PARALLEL_WORKERS = 16
 
 @dataclass
 class ScanConfig:
-    """Configuration for file scanning operations."""
+    """Configuration for file scanning operations.
+
+    Attributes:
+        chunk_size: Chunk size in bytes (power of two, >= 4096) used for partial/full hashing.
+        hash_algorithm: Hash algorithm name (sha256/sha512/md5/sha1/xxhash64).
+        parallel_workers: Number of worker processes (between 1 and 16).
+        storage_type: Underlying storage type hint ("ssd" or "hdd").
+    """
 
     chunk_size: int = 65536
     hash_algorithm: str = "xxhash64"
