@@ -16,7 +16,7 @@
   - _Requirements: Non-functional_
   - _Prompt: **instruction** Role: Python Developer | Task: Initialize project with uv and install dependencies | Context: Setting up a new Flet project for Duplicate File Remover | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Run `uv init` to initialize the project | Add dependencies: `flet`, `send2trash`, `pytest`, `ruff`, `mypy` | Create `src` directory structure | Ensure `pyproject.toml` is correctly configured | Restrictions: Use Python 3.10+ | Success Criteria: `uv run flet run src/main.py` runs successfully | After Implementation: Verify environment setup | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
-- [-] 2. データモデルの実装
+- [x] 2. データモデルの実装
   - File: src/models/file_meta.py, src/models/duplicate_group.py
   - FileMetaとDuplicateGroupのデータクラスを定義
   - Purpose: ファイル処理用のデータ構造を定義
