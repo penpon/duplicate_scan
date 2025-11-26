@@ -16,7 +16,7 @@ class Hasher:
         """Hasherを初期化する
 
         Args:
-            chunk_size: ファイル読み込みのチャンクサイズ（バイト単位）。デフォルトは4KB
+            chunk_size: ファイル読み込みのチャンクサイズ(バイト単位)。デフォルトは4KB
             hash_algorithm: 使用するハッシュアルゴリズム。デフォルトはSHA256
         """
         self.chunk_size = chunk_size
@@ -27,7 +27,7 @@ class Hasher:
         return hashlib.new(self.hash_algorithm)
 
     def calculate_partial_hash(self, file_path: Union[str, Path]) -> str:
-        """ファイルの部分ハッシュを計算する（最初と最後のチャンクサイズ分）
+        """ファイルの部分ハッシュを計算する(最初と最後のチャンクサイズ分)
 
         ネットワークドライブ上の大きなファイルを効率的に処理するために、
         ファイル全体ではなく最初と最後のチャンクサイズ分のみを読み込んでハッシュを計算する。
@@ -36,7 +36,7 @@ class Hasher:
             file_path: ファイルパス
 
         Returns:
-            ハッシュ値（16進数文字列）
+            ハッシュ値(16進数文字列)
 
         Raises:
             FileNotFoundError: ファイルが存在しない場合
@@ -65,7 +65,7 @@ class Hasher:
                 first_chunk = f.read(self.chunk_size)
                 hash_obj.update(first_chunk)
 
-                # 最後のチャンク（ファイルがチャンクサイズより大きい場合のみ）
+                # 最後のチャンク(ファイルがチャンクサイズより大きい場合のみ)
                 f.seek(-self.chunk_size, 2)
                 last_chunk = f.read(self.chunk_size)
                 hash_obj.update(last_chunk)
@@ -85,7 +85,7 @@ class Hasher:
             file_path: ファイルパス
 
         Returns:
-            ハッシュ値（16進数文字列）
+            ハッシュ値(16進数文字列)
 
         Raises:
             FileNotFoundError: ファイルが存在しない場合
