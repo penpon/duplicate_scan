@@ -12,10 +12,12 @@ dependencies = [
 [dependency-groups]
 dev = [
     "mypy>=1.18.2",
+    "pip-audit>=2.9.0",
     "poethepoet>=0.38.0",
     "pre-commit>=4.5.0",
     "pytest>=9.0.1",
     "pytest-cov>=6.0.0",
+    "pytest-xdist>=3.6.1",
     "ruff>=0.14.6",
 ]
 
@@ -26,9 +28,17 @@ lint.select = [
 
 [tool.mypy]
 ignore_missing_imports = true
+exclude = [
+    "worktree/.*",
+]
 
 [tool.poe.tasks]
 format = "uv run ruff format ."
 lint = "uv run ruff check --fix ."
 type-check = "uv run mypy ."
-quality-check = ["format", "lint", "type-check"]
+test = "bash scripts/run_tests.sh"
+coverage = "bash scripts/run_coverage.sh"
+audit = "uv run pip-audit --ignore-vuln GHSA-f83h-ghpp-7wcc"
+
+check = ["format", "lint", "type-check"]
+quality-check = ["check", "test", "coverage", "audit"]
