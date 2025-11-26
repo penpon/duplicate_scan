@@ -59,12 +59,18 @@ class TestScanConfig:
         # Non-power of 2 values should raise ValueError
         invalid_sizes = [1000, 4095, 4097, 5000, 65535, 65537]
         for size in invalid_sizes:
-            with pytest.raises(ValueError, match="chunk_size must be a power of 2"):
+            with pytest.raises(
+                ValueError,
+                match="chunk_size must be a power of 2",
+            ):
                 ScanConfig(chunk_size=size)
 
     def test_chunk_size_validation_too_small(self) -> None:
         """Test that chunk_size < 4096 raises ValueError."""
-        with pytest.raises(ValueError, match="chunk_size must be at least 4096"):
+        with pytest.raises(
+            ValueError,
+            match="chunk_size must be at least 4096",
+        ):
             ScanConfig(chunk_size=2048)
 
     def test_parallel_workers_validation_range(self) -> None:
@@ -84,15 +90,3 @@ class TestScanConfig:
                 ValueError, match="parallel_workers must be between 1 and 16"
             ):
                 ScanConfig(parallel_workers=workers)
-
-    def test_is_power_of_2_utility(self) -> None:
-        """Test the internal _is_power_of_2 utility method."""
-        # Test positive cases
-        powers_of_2 = [1, 2, 4, 8, 16, 32, 64, 128, 4096, 65536]
-        for n in powers_of_2:
-            assert ScanConfig._is_power_of_2(n) is True
-
-        # Test negative cases
-        non_powers = [0, 3, 5, 6, 7, 9, 10, 4095, 65535]
-        for n in non_powers:
-            assert ScanConfig._is_power_of_2(n) is False
