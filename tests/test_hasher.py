@@ -71,6 +71,26 @@ class TestHasher:
             for path in temp_files:
                 path.unlink()
 
+    def test_calculate_full_hashes_parallel_noop_on_empty_list(self):
+        """空リストでは何もせずに即時終了することを確認する。"""
+        hasher = Hasher()
+
+        files: list[FileMeta] = []
+
+        # When & Then: 例外なく終了し、リストはそのまま
+        hasher.calculate_full_hashes_parallel(files, max_workers=4)
+        assert files == []
+
+    def test_calculate_partial_hashes_parallel_noop_on_empty_list(self):
+        """空リストでは何もせずに即時終了することを確認する。"""
+        hasher = Hasher()
+
+        files: list[FileMeta] = []
+
+        # When & Then: 例外なく終了し、リストはそのまま
+        hasher.calculate_partial_hashes_parallel(files, max_workers=4)
+        assert files == []
+
     def test_calculate_full_hashes_parallel_updates_filemeta(self):
         """複数ファイルの完全ハッシュがインプレースで更新されることを確認する。"""
         contents = [b"X" * 1024, b"Y" * 2048, b"Z" * 4096]
