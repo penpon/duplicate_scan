@@ -103,9 +103,12 @@ class MainView(HomeView):
             folders: 再帰的に走査するフォルダパスのリスト。
 
         Returns:
-            List[FileMeta]: アクセス可能だったファイルのメタデータ一覧。
-            存在しないフォルダやアクセス権のないファイルはログを出さずに
+            list[FileMeta]: アクセス可能だったファイルのメタデータ一覧。
+            存在しないフォルダやアクセス権のないファイルはログを残して
             スキップされる。
+
+        Raises:
+            None.
         """
         files: List[FileMeta] = []
 
@@ -126,11 +129,14 @@ class MainView(HomeView):
                                 modified_time=datetime.fromtimestamp(stat.st_mtime),
                             )
                             files.append(file_meta)
-                        except (OSError, PermissionError):
-                            # Skip files that can't be accessed
+                        except (OSError, PermissionError) as err:
+                            logging.debug(
+                                "Skipping inaccessible file %s: %s", file_path, err
+                            )
                             continue
 
-            except (OSError, PermissionError):
+            except (OSError, PermissionError) as err:
+                logging.debug("Skipping inaccessible folder %s: %s", folder_path, err)
                 continue
 
         return files
