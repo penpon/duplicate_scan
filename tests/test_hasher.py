@@ -1,9 +1,11 @@
 """Hasherサービスのテスト"""
 
 import hashlib
+import logging
 import tempfile
 from datetime import datetime
 from pathlib import Path
+import time
 
 import pytest
 
@@ -34,6 +36,247 @@ class TestHasher:
             assert result == expected_hash
         finally:
             Path(temp_file_path).unlink()
+
+    def test_calculate_partial_hashes_parallel_updates_filemeta(self):
+        """複数ファイルの部分ハッシュがインプレースで更新されることを確認する。"""
+        contents = [b"A" * 1024, b"B" * 2048, b"C" * 4096]
+        temp_files: list[Path] = []
+        files: list[FileMeta] = []
+
+        for content in contents:
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                temp_file.write(content)
+                path = Path(temp_file.name)
+            temp_files.append(path)
+            files.append(
+                FileMeta(
+                    path=str(path),
+                    size=len(content),
+                    modified_time=datetime.fromtimestamp(path.stat().st_mtime),
+                )
+            )
+
+        try:
+            hasher = Hasher()
+
+            # When: 並列で部分ハッシュを計算
+            hasher.calculate_partial_hashes_parallel(files, max_workers=4)
+
+            # Then: FileMeta.partial_hash が設定され、単体計算と一致する
+            for file_meta, path in zip(files, temp_files):
+                assert file_meta.partial_hash is not None
+                expected = hasher.calculate_partial_hash(str(path))
+                assert file_meta.partial_hash == expected
+        finally:
+            for path in temp_files:
+                path.unlink()
+
+    def test_calculate_full_hashes_parallel_noop_on_empty_list(self):
+        """空リストでは何もせずに即時終了することを確認する。"""
+        hasher = Hasher()
+
+        files: list[FileMeta] = []
+
+        # When & Then: 例外なく終了し、リストはそのまま
+        hasher.calculate_full_hashes_parallel(files, max_workers=4)
+        assert files == []
+
+    def test_calculate_partial_hashes_parallel_noop_on_empty_list(self):
+        """空リストでは何もせずに即時終了することを確認する。"""
+        hasher = Hasher()
+
+        files: list[FileMeta] = []
+
+        # When & Then: 例外なく終了し、リストはそのまま
+        hasher.calculate_partial_hashes_parallel(files, max_workers=4)
+        assert files == []
+
+    def test_calculate_full_hashes_parallel_updates_filemeta(self):
+        """複数ファイルの完全ハッシュがインプレースで更新されることを確認する。"""
+        contents = [b"X" * 1024, b"Y" * 2048, b"Z" * 4096]
+        temp_files: list[Path] = []
+        files: list[FileMeta] = []
+
+        for content in contents:
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                temp_file.write(content)
+                path = Path(temp_file.name)
+            temp_files.append(path)
+            files.append(
+                FileMeta(
+                    path=str(path),
+                    size=len(content),
+                    modified_time=datetime.fromtimestamp(path.stat().st_mtime),
+                )
+            )
+
+        try:
+            hasher = Hasher()
+
+            # When: 並列で完全ハッシュを計算
+            hasher.calculate_full_hashes_parallel(files, max_workers=4)
+
+            # Then: FileMeta.full_hash が設定され、単体計算と一致する
+            for file_meta, path in zip(files, temp_files):
+                assert file_meta.full_hash is not None
+                expected = hasher.calculate_full_hash(str(path))
+                assert file_meta.full_hash == expected
+        finally:
+            for path in temp_files:
+                path.unlink()
+
+    def test_calculate_partial_hashes_parallel_handles_errors(self, caplog):
+        """存在しないファイルが含まれても他のファイルの処理は継続される。"""
+        # Given: 2つの有効ファイルと1つの存在しないファイル
+        temp_files: list[Path] = []
+        files: list[FileMeta] = []
+        content = b"E" * 1024
+
+        for _ in range(2):
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                temp_file.write(content)
+                path = Path(temp_file.name)
+            temp_files.append(path)
+            files.append(
+                FileMeta(
+                    path=str(path),
+                    size=len(content),
+                    modified_time=datetime.fromtimestamp(path.stat().st_mtime),
+                )
+            )
+
+        missing_path = "/path/to/nonexistent/file-for-parallel-test.txt"
+        missing_meta = FileMeta(
+            path=missing_path,
+            size=0,
+            modified_time=datetime.fromtimestamp(0),
+        )
+        files.append(missing_meta)
+
+        try:
+            hasher = Hasher()
+
+            # When: 並列部分ハッシュ計算を実行（警告ログのみで処理継続）
+            with caplog.at_level(logging.WARNING):
+                hasher.calculate_partial_hashes_parallel(files, max_workers=4)
+
+            # Then: 有効ファイルはハッシュが設定され、存在しないファイルは None のまま
+            for file_meta, path in zip(files[:2], temp_files):
+                assert file_meta.partial_hash is not None
+                expected = hasher.calculate_partial_hash(str(path))
+                assert file_meta.partial_hash == expected
+
+            assert missing_meta.partial_hash is None
+
+            # 警告ログが出力されていること
+            messages = [record.getMessage() for record in caplog.records]
+            assert any(
+                "Failed to calculate partial hash for" in message
+                and missing_path in message
+                for message in messages
+            )
+        finally:
+            for path in temp_files:
+                path.unlink()
+
+    def test_calculate_full_hashes_parallel_handles_errors(self, caplog):
+        """完全ハッシュ計算でもエラーがあっても処理継続することを確認する。"""
+        temp_files: list[Path] = []
+        files: list[FileMeta] = []
+        content = b"F" * 2048
+
+        for _ in range(2):
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                temp_file.write(content)
+                path = Path(temp_file.name)
+            temp_files.append(path)
+            files.append(
+                FileMeta(
+                    path=str(path),
+                    size=len(content),
+                    modified_time=datetime.fromtimestamp(path.stat().st_mtime),
+                )
+            )
+
+        missing_path = "/path/to/nonexistent/file-for-full-hash-test.txt"
+        missing_meta = FileMeta(
+            path=missing_path,
+            size=0,
+            modified_time=datetime.fromtimestamp(0),
+        )
+        files.append(missing_meta)
+
+        try:
+            hasher = Hasher()
+
+            with caplog.at_level(logging.WARNING):
+                hasher.calculate_full_hashes_parallel(files, max_workers=4)
+
+            for file_meta, path in zip(files[:2], temp_files):
+                assert file_meta.full_hash is not None
+                expected = hasher.calculate_full_hash(str(path))
+                assert file_meta.full_hash == expected
+
+            assert missing_meta.full_hash is None
+
+            messages = [record.getMessage() for record in caplog.records]
+            assert any(
+                "Failed to calculate full hash for" in message
+                and missing_path in message
+                for message in messages
+            )
+        finally:
+            for path in temp_files:
+                path.unlink()
+
+    def test_full_hashes_parallel_is_faster_than_sequential(self, monkeypatch):
+        """完全ハッシュの並列計算がシーケンシャルより高速であることを緩やかに確認する。"""
+        temp_files: list[Path] = []
+        files: list[FileMeta] = []
+
+        for i in range(8):
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                content = f"file-{i}".encode("utf-8") * 2048
+                temp_file.write(content)
+                path = Path(temp_file.name)
+            temp_files.append(path)
+            files.append(
+                FileMeta(
+                    path=str(path),
+                    size=path.stat().st_size,
+                    modified_time=datetime.fromtimestamp(path.stat().st_mtime),
+                )
+            )
+
+        hasher = Hasher()
+        original_full_hash = hasher.calculate_full_hash
+
+        def slow_full_hash(path: str) -> str:
+            time.sleep(0.02)
+            return original_full_hash(path)
+
+        monkeypatch.setattr(hasher, "calculate_full_hash", slow_full_hash)
+
+        try:
+            # シーケンシャル計測
+            start_seq = time.monotonic()
+            for file_meta in files:
+                file_meta.full_hash = hasher.calculate_full_hash(file_meta.path)
+            seq_duration = time.monotonic() - start_seq
+
+            # 並列計測
+            for file_meta in files:
+                file_meta.full_hash = None
+
+            start_par = time.monotonic()
+            hasher.calculate_full_hashes_parallel(files, max_workers=4)
+            par_duration = time.monotonic() - start_par
+
+            # 並列の方が速いことを確認（マージンは緩め: 20%まで許容）
+            assert par_duration < seq_duration * 0.8
+        finally:
+            for path in temp_files:
+                path.unlink()
 
     def test_calculate_partial_hash_large_file(self):
         """大きなファイルの部分ハッシュ計算テスト"""

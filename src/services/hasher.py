@@ -1,12 +1,17 @@
 """Hasherサービス - ファイルハッシュ計算"""
 
 import hashlib
+import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Optional, Union, overload
+from typing import Any, Callable, Optional, Union, overload
 
 import xxhash
 
+from src.models.file_meta import FileMeta
 from src.models.scan_config import ScanConfig
+
+logger = logging.getLogger(__name__)
 
 
 class Hasher:
@@ -140,6 +145,87 @@ class Hasher:
 
         except OSError as e:
             raise OSError(f"Failed to read file {file_path}: {e}") from e
+
+    def _calculate_hashes_parallel(
+        self,
+        files: list[FileMeta],
+        max_workers: int,
+        hash_func: Callable[[Union[str, Path]], str],
+        attr_name: str,
+        log_prefix: str,
+    ) -> None:
+        """並列でハッシュを計算するための共通処理。"""
+        if not files:
+            return
+
+        def _worker(
+            file_meta: FileMeta,
+        ) -> tuple[FileMeta, str | None, Exception | None]:
+            try:
+                hash_value = hash_func(file_meta.path)
+                return (file_meta, hash_value, None)
+            except Exception as exc:  # noqa: BLE001
+                return (file_meta, None, exc)
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = [executor.submit(_worker, file_meta) for file_meta in files]
+            for future in as_completed(futures):
+                file_meta, hash_value, exc = future.result()
+                if exc is not None:
+                    logger.warning("%s %s: %s", log_prefix, file_meta.path, exc)
+                    continue
+
+                setattr(file_meta, attr_name, hash_value)
+
+    def calculate_partial_hashes_parallel(
+        self,
+        files: list[FileMeta],
+        max_workers: int = 4,
+    ) -> None:
+        """複数ファイルの部分ハッシュを並列に計算する。
+
+        FileMeta の ``partial_hash`` をインプレースで更新する。
+        1ファイルでエラーが発生しても処理を継続し、警告ログのみを出力する。
+
+        Args:
+            files: ハッシュ計算対象の FileMeta リスト。
+            max_workers: 並列処理に利用するワーカースレッド数。デフォルトは4。
+
+        Returns:
+            None: FileMeta.partial_hash をインプレースで更新する。
+        """
+        self._calculate_hashes_parallel(
+            files=files,
+            max_workers=max_workers,
+            hash_func=self.calculate_partial_hash,
+            attr_name="partial_hash",
+            log_prefix="Failed to calculate partial hash for",
+        )
+
+    def calculate_full_hashes_parallel(
+        self,
+        files: list[FileMeta],
+        max_workers: int = 4,
+    ) -> None:
+        """複数ファイルの完全ハッシュを並列に計算する。
+
+        FileMeta の ``full_hash`` をインプレースで更新する。
+        1ファイルでエラーが発生しても処理を継続し、警告ログのみを出力する。
+
+        Args:
+            files: ハッシュ計算対象の FileMeta リスト。
+            max_workers: 並列処理に利用するワーカースレッド数。デフォルトは4。
+
+        Returns:
+            None: FileMeta.full_hash をインプレースで更新する。
+        """
+        self._calculate_hashes_parallel(
+            files=files,
+            max_workers=max_workers,
+            hash_func=self.calculate_full_hash,
+            attr_name="full_hash",
+            log_prefix="Failed to calculate full hash for",
+        )
 
     def calculate_full_hash(self, file_path: Union[str, Path]) -> str:
         """ファイルの完全ハッシュを計算する
