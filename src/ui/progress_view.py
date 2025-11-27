@@ -78,9 +78,7 @@ class ProgressView:
             stage: 現在のステージ名
         """
         self.stage_label.value = stage
-        self.progress_bar.value = (
-            0.0  # FletのProgressBarはNoneをサポートしていないため0に設定
-        )
+        self.progress_bar.value = None  # Fletのインデターミネート表示を使用
         self.count_label.value = "Processing..."
 
         if self.page:

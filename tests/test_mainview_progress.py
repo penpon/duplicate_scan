@@ -1,6 +1,5 @@
 """MainViewのプログレス表示統合テスト"""
 
-import pytest
 from unittest.mock import Mock, patch
 import flet as ft
 
@@ -8,8 +7,6 @@ from src.main import MainView
 from src.models.file_meta import FileMeta
 from src.models.duplicate_group import DuplicateGroup
 from src.models.scan_config import ScanConfig
-from src.services.detector import DuplicateDetector
-from src.services.hasher import Hasher
 
 
 class TestMainViewProgress:
@@ -78,7 +75,18 @@ class TestMainViewProgress:
 
         # プログレスビューをモック
         mock_progress_view = Mock()
+        mock_progress_view.page = mock_page
         main_view.progress_view = mock_progress_view
+
+        # DuplicateDetectorの返り値がコールバックを呼び出すように設定
+        def _mock_find_duplicates(files, hasher, progress_callback):
+            progress_callback("Hashing", 5, 10)
+            return []
+
+        mock_detector_instance = mock_detector_class.return_value
+        mock_detector_instance.find_duplicates_optimized.side_effect = (
+            _mock_find_duplicates
+        )
 
         # _collect_filesをモック
         with patch.object(
@@ -88,12 +96,10 @@ class TestMainViewProgress:
                 # スキャン開始
                 main_view._on_start_scan_clicked(None)
 
-                # プログレスコールバックが設定され、呼び出されることを確認
-                assert hasattr(main_view, "_on_start_scan_clicked")
-
-                # 実際のプログレスコールバックを取得してテスト
-                # これは内部関数なので直接テストは難しいが、ProgressViewのupdate_progressが
-                # 呼ばれることを確認できる
+                # ProgressViewのupdate_progressが正しく呼ばれたことを確認
+                mock_progress_view.update_progress.assert_called_once_with(
+                    "Hashing", 5, 10
+                )
 
     def test_on_scan_cancelled_returns_to_home(self) -> None:
         """スキャンキャンセル時にホーム画面に戻るテスト"""

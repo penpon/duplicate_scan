@@ -1,7 +1,6 @@
 """ProgressViewのテスト"""
 
-import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 import flet as ft
 
 from src.ui.progress_view import ProgressView
@@ -73,9 +72,8 @@ class TestProgressView:
         progress_view.set_indeterminate("Initializing...")
 
         assert progress_view.stage_label.value == "Initializing..."
-        assert (
-            progress_view.progress_bar.value == 0.0
-        )  # FletのProgressBarはNoneをサポートしていない
+        # Fletはvalue=Noneを内部的に空文字として保持するため、属性を直接確認する
+        assert progress_view.progress_bar._get_attr("value", data_type="string") == ""
         assert progress_view.count_label.value == "Processing..."
         mock_page.update.assert_called_once()
 
