@@ -7,7 +7,13 @@ from typing import Literal
 MIN_CHUNK_SIZE = 4096
 MIN_PARALLEL_WORKERS = 1
 MAX_PARALLEL_WORKERS = 16
-SUPPORTED_HASH_ALGORITHMS: tuple[str, ...] = ("sha256", "sha512", "md5", "sha1")
+SUPPORTED_HASH_ALGORITHMS: tuple[str, ...] = (
+    "xxhash64",
+    "sha256",
+    "sha512",
+    "md5",
+    "sha1",
+)
 
 
 @dataclass
@@ -22,7 +28,7 @@ class ScanConfig:
     """
 
     chunk_size: int = 65536
-    hash_algorithm: str = "sha256"
+    hash_algorithm: str = "xxhash64"
     parallel_workers: int = 4
     storage_type: Literal["ssd", "hdd"] = "ssd"
 
@@ -49,7 +55,8 @@ class ScanConfig:
                 f"{MIN_PARALLEL_WORKERS} and {MAX_PARALLEL_WORKERS}"
             )
 
-    def _validate_hash_algorithm(self, value: str) -> None:
+    @staticmethod
+    def _validate_hash_algorithm(value: str) -> None:
         """Validate hash_algorithm is supported."""
         if value not in SUPPORTED_HASH_ALGORITHMS:
             supported = ", ".join(SUPPORTED_HASH_ALGORITHMS)

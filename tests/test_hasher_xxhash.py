@@ -1,4 +1,4 @@
-"""Hasherサービスのxxhashサポートテスト"""
+"""Tests for Hasher service xxhash support."""
 
 import tempfile
 from pathlib import Path
@@ -10,7 +10,7 @@ from src.services.hasher import Hasher
 
 
 class TestHasherXxhash:
-    """Hasherクラスのxxhashサポートテスト"""
+    """Tests for Hasher class xxhash support."""
 
     def test_init_with_scan_config_default(self):
         """ScanConfigを使用した初期化テスト（デフォルト値）"""
@@ -159,10 +159,8 @@ class TestHasherXxhash:
     def test_invalid_hash_algorithm_raises_error(self):
         """無効なハッシュアルゴリズム指定でエラーが発生することの検証"""
         # Given: 無効なハッシュアルゴリズムを指定
-        config = ScanConfig(hash_algorithm="invalid_algorithm")
-
-        # When & Then: エラーが発生すること
         with pytest.raises(ValueError):
+            config = ScanConfig(hash_algorithm="invalid_algorithm")
             Hasher(config)
 
     def test_scan_config_positional_with_hash_algorithm_raises_error(self):
