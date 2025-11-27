@@ -202,8 +202,8 @@ class TestHasher:
             hasher.calculate_full_hashes_parallel(files, max_workers=4)
             par_duration = time.monotonic() - start_par
 
-            # 並列の方が速いことを確認（マージンは緩め）
-            assert par_duration < seq_duration
+            # 並列の方が速いことを確認（マージンは緩め: 20%まで許容）
+            assert par_duration < seq_duration * 0.8
         finally:
             for path in temp_files:
                 path.unlink()
