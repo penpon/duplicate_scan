@@ -179,6 +179,56 @@ class TestHasher:
             for path in temp_files:
                 path.unlink()
 
+    def test_calculate_full_hashes_parallel_handles_errors(self, caplog):
+        """完全ハッシュ計算でもエラーがあっても処理継続することを確認する。"""
+        temp_files: list[Path] = []
+        files: list[FileMeta] = []
+        content = b"F" * 2048
+
+        for _ in range(2):
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                temp_file.write(content)
+                path = Path(temp_file.name)
+            temp_files.append(path)
+            files.append(
+                FileMeta(
+                    path=str(path),
+                    size=len(content),
+                    modified_time=datetime.fromtimestamp(path.stat().st_mtime),
+                )
+            )
+
+        missing_path = "/path/to/nonexistent/file-for-full-hash-test.txt"
+        missing_meta = FileMeta(
+            path=missing_path,
+            size=0,
+            modified_time=datetime.fromtimestamp(0),
+        )
+        files.append(missing_meta)
+
+        try:
+            hasher = Hasher()
+
+            with caplog.at_level(logging.WARNING):
+                hasher.calculate_full_hashes_parallel(files, max_workers=4)
+
+            for file_meta, path in zip(files[:2], temp_files):
+                assert file_meta.full_hash is not None
+                expected = hasher.calculate_full_hash(str(path))
+                assert file_meta.full_hash == expected
+
+            assert missing_meta.full_hash is None
+
+            messages = [record.getMessage() for record in caplog.records]
+            assert any(
+                "Failed to calculate full hash for" in message
+                and missing_path in message
+                for message in messages
+            )
+        finally:
+            for path in temp_files:
+                path.unlink()
+
     def test_full_hashes_parallel_is_faster_than_sequential(self, monkeypatch):
         """完全ハッシュの並列計算がシーケンシャルより高速であることを緩やかに確認する。"""
         temp_files: list[Path] = []
