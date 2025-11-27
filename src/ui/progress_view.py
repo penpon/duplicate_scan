@@ -61,7 +61,8 @@ class ProgressView:
         self.stage_label.value = stage
 
         if total > 0:
-            self.progress_bar.value = current / total
+            progress_ratio = current / total
+            self.progress_bar.value = max(0.0, min(1.0, progress_ratio))
             self.count_label.value = f"{current}/{total}"
         else:
             self.progress_bar.value = 0.0

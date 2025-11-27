@@ -62,6 +62,18 @@ class TestProgressView:
         assert progress_view.count_label.value == "0/0"
         mock_page.update.assert_called_once()
 
+    def test_update_progress_clamps_value(self) -> None:
+        """currentがtotalを超えても値がクランプされるテスト"""
+        progress_view = ProgressView()
+        mock_page = Mock()
+        progress_view.page = mock_page
+
+        progress_view.update_progress("Processing", 150, 100)
+
+        assert progress_view.progress_bar.value == 1.0
+        assert progress_view.count_label.value == "150/100"
+        mock_page.update.assert_called_once()
+
     def test_set_indeterminate(self) -> None:
         """不定モード設定のテスト"""
         progress_view = ProgressView()
