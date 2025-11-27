@@ -186,6 +186,13 @@ class Hasher:
 
         FileMeta の ``partial_hash`` をインプレースで更新する。
         1ファイルでエラーが発生しても処理を継続し、警告ログのみを出力する。
+
+        Args:
+            files: ハッシュ計算対象の FileMeta リスト。
+            max_workers: 並列処理に利用するワーカースレッド数。デフォルトは4。
+
+        Returns:
+            None: FileMeta.partial_hash をインプレースで更新する。
         """
         self._calculate_hashes_parallel(
             files=files,
@@ -204,6 +211,13 @@ class Hasher:
 
         FileMeta の ``full_hash`` をインプレースで更新する。
         1ファイルでエラーが発生しても処理を継続し、警告ログのみを出力する。
+
+        Args:
+            files: ハッシュ計算対象の FileMeta リスト。
+            max_workers: 並列処理に利用するワーカースレッド数。デフォルトは4。
+
+        Returns:
+            None: FileMeta.full_hash をインプレースで更新する。
         """
         self._calculate_hashes_parallel(
             files=files,
