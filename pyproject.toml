@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "flet>=0.28.3",
+    "flet>=0.28.2,<0.28.3",
     "send2trash>=1.8.3",
     "xxhash>=3.6.0",
 ]
