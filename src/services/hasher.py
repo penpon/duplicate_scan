@@ -1,8 +1,14 @@
 """Hasherサービス - ファイルハッシュ計算"""
 
 import hashlib
+import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Union
+
+from src.models.file_meta import FileMeta
+
+logger = logging.getLogger(__name__)
 
 
 class Hasher:
@@ -74,6 +80,82 @@ class Hasher:
 
         except OSError as e:
             raise OSError(f"Failed to read file {file_path}: {e}") from e
+
+    def calculate_partial_hashes_parallel(
+        self,
+        files: list[FileMeta],
+        max_workers: int = 4,
+    ) -> None:
+        """複数ファイルの部分ハッシュを並列に計算する。
+
+        FileMeta の ``partial_hash`` をインプレースで更新する。
+        1ファイルでエラーが発生しても処理を継続し、警告ログのみを出力する。
+        """
+        if not files:
+            return
+
+        def _worker(
+            file_meta: FileMeta,
+        ) -> tuple[FileMeta, str | None, Exception | None]:
+            try:
+                hash_value = self.calculate_partial_hash(file_meta.path)
+                return (file_meta, hash_value, None)
+            except Exception as exc:  # noqa: BLE001
+                return (file_meta, None, exc)
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = {
+                executor.submit(_worker, file_meta): file_meta for file_meta in files
+            }
+            for future in as_completed(futures):
+                file_meta, hash_value, exc = future.result()
+                if exc is not None:
+                    logger.warning(
+                        "Failed to calculate partial hash for %s: %s",
+                        file_meta.path,
+                        exc,
+                    )
+                    continue
+
+                file_meta.partial_hash = hash_value
+
+    def calculate_full_hashes_parallel(
+        self,
+        files: list[FileMeta],
+        max_workers: int = 4,
+    ) -> None:
+        """複数ファイルの完全ハッシュを並列に計算する。
+
+        FileMeta の ``full_hash`` をインプレースで更新する。
+        1ファイルでエラーが発生しても処理を継続し、警告ログのみを出力する。
+        """
+        if not files:
+            return
+
+        def _worker(
+            file_meta: FileMeta,
+        ) -> tuple[FileMeta, str | None, Exception | None]:
+            try:
+                hash_value = self.calculate_full_hash(file_meta.path)
+                return (file_meta, hash_value, None)
+            except Exception as exc:  # noqa: BLE001
+                return (file_meta, None, exc)
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = {
+                executor.submit(_worker, file_meta): file_meta for file_meta in files
+            }
+            for future in as_completed(futures):
+                file_meta, hash_value, exc = future.result()
+                if exc is not None:
+                    logger.warning(
+                        "Failed to calculate full hash for %s: %s",
+                        file_meta.path,
+                        exc,
+                    )
+                    continue
+
+                file_meta.full_hash = hash_value
 
     def calculate_full_hash(self, file_path: Union[str, Path]) -> str:
         """ファイルの完全ハッシュを計算する
