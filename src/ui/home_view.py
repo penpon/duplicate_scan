@@ -53,7 +53,7 @@ class HomeView:
                 ft.Text("Selected Folders:", weight=ft.FontWeight.BOLD),
                 ft.Container(
                     content=self.folder_list,
-                    border=ft.border.all(1, ft.colors.OUTLINE),
+                    border=ft.border.all(1, ft.Colors.OUTLINE),
                     border_radius=8,
                     padding=10,
                     margin=ft.margin.only(bottom=20),
