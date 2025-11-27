@@ -1,16 +1,25 @@
 """Tests for MainView integration with optimized scanning."""
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from pathlib import Path
 import tempfile
-import os
 
 from src.main import MainView
-from src.models.scan_config import ScanConfig
-from src.services.detector import DuplicateDetector
-from src.services.hasher import Hasher
-from src.models.file_meta import FileMeta
+
+
+class DummyPage:
+    """Minimal page stub for invoking MainView handlers in tests."""
+
+    def __init__(self) -> None:
+        self.snack_bar = None
+        self.controls: list = []
+
+    def update(self) -> None:  # pragma: no cover - no behavior needed
+        """No-op update hook"""
+
+    def add(self, control) -> None:
+        self.controls.append(control)
 
 
 class TestMainViewOptimizedIntegration:
@@ -114,6 +123,34 @@ class TestMainViewOptimizedIntegration:
                 assert call_args is not None
                 assert len(call_args[0]) >= 3  # files, hasher, progress_callback
                 assert callable(call_args[0][2])  # progress_callback should be callable
+
+    def test_full_scan_detects_duplicates(self):
+        """End-to-end test verifying optimized scanning finds duplicate files."""
+        # Given
+        page = DummyPage()
+        main_view = MainView(page)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            base_path = Path(temp_dir)
+            duplicate_a = base_path / "dup_a.txt"
+            duplicate_b = base_path / "dup_b.txt"
+            unique_file = base_path / "unique.txt"
+
+            duplicate_a.write_text("duplicate data")
+            duplicate_b.write_text("duplicate data")
+            unique_file.write_text("unique content that differs")
+
+            main_view.selected_folders = [temp_dir]
+
+            # When
+            main_view._on_start_scan_clicked(Mock())
+
+            # Then
+            assert main_view.results_view is not None
+            groups = main_view.results_view.duplicate_groups
+            assert len(groups) == 1
+            duplicate_paths = sorted(file.path for file in groups[0].files)
+            assert duplicate_paths == sorted([str(duplicate_a), str(duplicate_b)])
 
     def test_old_compute_hashes_method_removed(self):
         """Test that _compute_hashes method is removed from MainView."""
