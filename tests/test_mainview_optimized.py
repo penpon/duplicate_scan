@@ -142,10 +142,10 @@ class TestMainViewOptimizedIntegration:
 
             main_view.selected_folders = [temp_dir]
 
-            # When
+            # When: Start optimized scan end-to-end
             main_view._on_start_scan_clicked(Mock())
 
-            # Then
+            # Then: Duplicate files should be detected correctly
             assert main_view.results_view is not None
             groups = main_view.results_view.duplicate_groups
             assert len(groups) == 1
