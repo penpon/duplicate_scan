@@ -10,6 +10,7 @@ import flet as ft
 from src.ui.home_view import HomeView
 from src.ui.results_view import ResultsView
 from src.models.file_meta import FileMeta
+from src.models.duplicate_group import DuplicateGroup
 from src.models.scan_config import ScanConfig
 from src.services.detector import DuplicateDetector
 from src.services.hasher import Hasher
@@ -34,6 +35,12 @@ class MainView(HomeView):
         selected_folders = self.selected_folders
         if not selected_folders or not self.page:
             return
+
+        logging.info(
+            "Starting optimized scan of %d folders: %s",
+            len(selected_folders),
+            selected_folders,
+        )
 
         try:
             # Show progress notification
@@ -64,13 +71,18 @@ class MainView(HomeView):
 
             # Define progress callback
             def progress_callback(message: str, current: int, total: int) -> None:
-                if self.page:
+                if not self.page:
+                    return
+
+                try:
                     self.page.snack_bar = ft.SnackBar(
                         content=ft.Text(f"{message}: {current}/{total}"),
                         bgcolor=ft.Colors.GREEN_600,
                     )
                     self.page.snack_bar.open = True
                     self.page.update()
+                except Exception as err:  # noqa: BLE001
+                    logging.warning("Failed to update progress: %s", err)
 
             # Run optimized duplicate detection
             duplicate_groups = detector.find_duplicates_optimized(
@@ -80,9 +92,9 @@ class MainView(HomeView):
             # Show results
             self._show_results(duplicate_groups)
 
-        except Exception as ex:
-            logging.error(f"Scan failed: {ex}")
-            self._show_error(f"Scan failed: {str(ex)}")
+        except (OSError, FileNotFoundError) as ex:
+            logging.error("Scan failed due to filesystem error: %s", ex)
+            self._show_error(f"Scan failed: {ex}")
 
     def _collect_files(self, folders: List[str]) -> List[FileMeta]:
         """指定されたフォルダからファイルを収集する"""
@@ -114,13 +126,15 @@ class MainView(HomeView):
 
         return files
 
-    def _show_results(self, duplicate_groups) -> None:
+    def _show_results(self, duplicate_groups: List[DuplicateGroup]) -> None:
         """重複ファイルの結果を表示する"""
         if not self.page:
             return
 
         # Create or update results view
-        self.results_view = ResultsView()
+        if not self.results_view:
+            self.results_view = ResultsView()
+        self.results_view.page = self.page
         self.results_view.set_duplicate_groups(duplicate_groups)
 
         # Clear current content and show results
