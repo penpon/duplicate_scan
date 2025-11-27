@@ -88,3 +88,11 @@
   - _Leverage: design.md (Testing Strategy)_
   - _Requirements: All_
   - _Prompt: **instruction** Role: QA Engineer | Task: Perform Integration and E2E Tests | Context: Verify the entire application flow | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create integration tests covering Hasher, DuplicateDetector, Deleter, and key UI views (ResultsView, CleanupView) | Perform manual E2E tests including Scanner → Hasher → Detector → Deleter with dummy files on local/network drives | Restrictions: None | Success Criteria: All tests pass, app works as expected | After Implementation: Final Report | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
+
+- [x] 7. スキャン最適化の統合テスト
+  - File: tests/test_scan_optimization.py
+  - QA Engineerとして統合テストとパフォーマンスベンチマークを作成
+  - Purpose: 最適化機能の正しさとパフォーマンス改善を検証
+  - _Leverage: tests/test_detector.py, tests/test_hasher.py_
+  - _Requirements: 3, Non-functional_
+  - _Prompt: **instruction** Role: QA Engineer with expertise in integration testing and performance benchmarking | Task: Create tests/test_scan_optimization.py with: test_optimized_vs_original_correctness(), test_size_filtering_effectiveness(), test_lazy_hash_effectiveness(), test_parallel_performance(), test_progress_callback(). Generate test files with known duplicates, verify identical results, measure performance improvement. | Context: Need to verify all optimizations work correctly together. Reference tests/test_detector.py and tests/test_hasher.py for patterns. Use tempfile for test file creation. | Implementation Instructions: Mark this task as in-progress ([-]) in tasks.md. Create integration test file. Run uv run pytest tests/test_scan_optimization.py -v. Run full suite: uv run pytest -n auto. | Restrictions: Use pytest fixtures. Clean up test files. Tests should run in <30 seconds. | Success Criteria: All integration tests pass. Performance improvement measurable. No regressions. | After Implementation: Log implementation using log-implementation tool. Mark as completed ([x]) in tasks.md. Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
