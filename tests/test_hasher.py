@@ -1,6 +1,7 @@
 """Hasherサービスのテスト"""
 
 import hashlib
+import logging
 import tempfile
 from datetime import datetime
 from pathlib import Path
@@ -136,7 +137,7 @@ class TestHasher:
             hasher = Hasher()
 
             # When: 並列部分ハッシュ計算を実行（警告ログのみで処理継続）
-            with caplog.at_level("WARNING"):
+            with caplog.at_level(logging.WARNING):
                 hasher.calculate_partial_hashes_parallel(files, max_workers=4)
 
             # Then: 有効ファイルはハッシュが設定され、存在しないファイルは None のまま
