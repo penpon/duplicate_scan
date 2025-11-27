@@ -1,24 +1,37 @@
 """Tests for MainView integration with optimized scanning."""
 
-import pytest
-from unittest.mock import Mock, patch
-from pathlib import Path
 import tempfile
+from pathlib import Path
+from unittest.mock import Mock, patch
+
+import flet as ft
+import pytest
 
 from src.main import MainView
 
 
 class DummyPage:
-    """Minimal page stub for invoking MainView handlers in tests."""
+    """Minimal page stub for invoking MainView handlers in tests.
+
+    Attributes:
+        snack_bar: SnackBar control assigned by the view, if any.
+        controls: Controls added to the page via ``add``.
+    """
 
     def __init__(self) -> None:
+        """Initialize the page stub with empty state."""
         self.snack_bar = None
-        self.controls: list = []
+        self.controls: list[ft.Control] = []
 
     def update(self) -> None:  # pragma: no cover - no behavior needed
-        """No-op update hook"""
+        """No-op update hook."""
 
-    def add(self, control) -> None:
+    def add(self, control: ft.Control) -> None:
+        """Add a control to the page.
+
+        Args:
+            control: Control instance to append to the page.
+        """
         self.controls.append(control)
 
 
