@@ -89,7 +89,7 @@
   - _Requirements: All_
   - _Prompt: **instruction** Role: QA Engineer | Task: Perform Integration and E2E Tests | Context: Verify the entire application flow | Implementation Instructions: Before starting implementation, mark this task as in-progress ([-]) in tasks.md | Create integration tests covering Hasher, DuplicateDetector, Deleter, and key UI views (ResultsView, CleanupView) | Perform manual E2E tests including Scanner → Hasher → Detector → Deleter with dummy files on local/network drives | Restrictions: None | Success Criteria: All tests pass, app works as expected | After Implementation: Final Report | Mark as completed ([x]) in tasks.md | Group changes by similarity and git commit. If pre-commit fails, fix issues and retry commit._
 
-- [x] 7. スキャン最適化の統合テスト
+- [x] 11. スキャン最適化の統合テスト
   - File: tests/test_scan_optimization.py
   - QA Engineerとして統合テストとパフォーマンスベンチマークを作成
   - Purpose: 最適化機能の正しさとパフォーマンス改善を検証
