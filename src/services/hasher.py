@@ -2,7 +2,11 @@
 
 import hashlib
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Optional, Union, overload
+
+import xxhash
+
+from src.models.scan_config import ScanConfig
 
 
 class Hasher:
@@ -12,18 +16,80 @@ class Hasher:
     部分ハッシュと完全ハッシュの計算機能を提供する。
     """
 
-    def __init__(self, chunk_size: int = 4096, hash_algorithm: str = "sha256") -> None:
+    @overload
+    def __init__(
+        self,
+        chunk_size: Optional[int] = None,
+        hash_algorithm: Optional[str] = None,
+        *,
+        config: Optional[ScanConfig] = None,
+    ) -> None: ...
+
+    @overload
+    def __init__(
+        self,
+        chunk_size: ScanConfig,
+        hash_algorithm: None = None,
+        *,
+        config: Optional[ScanConfig] = None,
+    ) -> None: ...
+
+    def __init__(
+        self,
+        chunk_size: Optional[Union[ScanConfig, int]] = None,
+        hash_algorithm: Optional[str] = None,
+        *,
+        config: Optional[ScanConfig] = None,
+    ) -> None:
         """Hasherを初期化する
 
         Args:
-            chunk_size: ファイル読み込みのチャンクサイズ(バイト単位)。デフォルトは4096(4KB)
-            hash_algorithm: 使用するハッシュアルゴリズム。デフォルトはSHA256
+            chunk_size: ファイル読み込みのチャンクサイズ(バイト単位) または ScanConfig。
+                旧API互換のため位置引数で指定可能。
+            hash_algorithm: 使用するハッシュアルゴリズム。デフォルトはSHA256。
+            config: ScanConfigオブジェクト。指定された場合は他のパラメータを無視。
         """
-        self.chunk_size = chunk_size
-        self.hash_algorithm = hash_algorithm
+        if config is not None:
+            if not isinstance(config, ScanConfig):
+                raise ValueError("config must be a ScanConfig object")
+            self.chunk_size = config.chunk_size
+            self.hash_algorithm = config.hash_algorithm
+        elif isinstance(chunk_size, ScanConfig):
+            if hash_algorithm is not None:
+                raise ValueError(
+                    "Cannot specify hash_algorithm when passing ScanConfig as the first argument"
+                )
+            self.chunk_size = chunk_size.chunk_size
+            self.hash_algorithm = chunk_size.hash_algorithm
+        elif isinstance(chunk_size, int):
+            self.chunk_size = chunk_size
+            self.hash_algorithm = (
+                hash_algorithm if hash_algorithm is not None else "sha256"
+            )
+        elif chunk_size is not None:
+            raise ValueError("chunk_size must be an int or ScanConfig")
+        else:
+            self.chunk_size = 4096
+            self.hash_algorithm = (
+                hash_algorithm if hash_algorithm is not None else "sha256"
+            )
+
+        # ハッシュアルゴリズムの検証
+        self._validate_hash_algorithm()
+
+    def _validate_hash_algorithm(self) -> None:
+        """ハッシュアルゴリズムが有効か検証する"""
+        if self.hash_algorithm == "xxhash64":
+            return  # xxhash64は常に有効
+        elif self.hash_algorithm in hashlib.algorithms_available:
+            return  # hashlibでサポートされているアルゴリズム
+        else:
+            raise ValueError(f"Unsupported hash algorithm: {self.hash_algorithm}")
 
     def _get_hash_object(self) -> Any:
         """ハッシュオブジェクトを取得する"""
+        if self.hash_algorithm == "xxhash64":
+            return xxhash.xxh64()
         return hashlib.new(self.hash_algorithm)
 
     def calculate_partial_hash(self, file_path: Union[str, Path]) -> str:
