@@ -134,7 +134,15 @@ class MainView(HomeView):
         return files
 
     def _show_progress(self) -> None:
-        """プログレスビューを表示する"""
+        """
+        プログレスビューを表示する。
+
+        ProgressViewを作成または再利用し、キャンセルコールバックを設定したうえで
+        ページに追加する。既存のコンテンツはクリアされる。
+
+        Raises:
+            None
+        """
         if not self.page:
             return
 
