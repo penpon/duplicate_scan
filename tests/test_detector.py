@@ -270,11 +270,18 @@ class TestDuplicateDetector:
         assert result[0].total_size == 300
 
     def test_find_duplicates_optimized_exists(self) -> None:
-        """Verify that find_duplicates_optimized method exists."""
-        detector = DuplicateDetector()
-        hasher = Hasher()
+        """Verify that find_duplicates_optimized method exists.
 
-        # This should fail initially - method doesn't exist yet
+        Args:
+            self: Unused; part of unittest-style test signature.
+
+        Returns:
+            None.
+        """
+        # Given: a detector instance
+        detector = DuplicateDetector()
+
+        # When/Then: the method should exist with correct signature
         assert hasattr(detector, "find_duplicates_optimized")
 
         # Method signature should be correct
@@ -286,10 +293,21 @@ class TestDuplicateDetector:
         assert actual_params == expected_params
 
     def test_find_duplicates_optimized_same_results_as_original(self) -> None:
-        """Verify optimized method produces same results as original."""
-        # Given: test files with duplicates
+        """Verify optimized method produces same results as original.
+
+        Args:
+            self: Unused; part of unittest-style test signature.
+
+        Returns:
+            None.
+        """
+        # Given: test files with duplicates and mocked hasher
+        from unittest.mock import Mock
+
         detector = DuplicateDetector()
-        hasher = Hasher()
+        hasher = Mock(spec=Hasher)
+        hasher.calculate_partial_hashes_parallel = Mock()
+        hasher.calculate_full_hashes_parallel = Mock()
 
         file1 = FileMeta(
             path="/test/file1.txt",
@@ -326,9 +344,21 @@ class TestDuplicateDetector:
             assert original_result[0].total_size == optimized_result[0].total_size
 
     def test_find_duplicates_optimized_progress_callback(self) -> None:
-        """Verify progress callback is called at each stage."""
+        """Verify progress callback is called at each stage.
+
+        Args:
+            self: Unused; part of unittest-style test signature.
+
+        Returns:
+            None.
+        """
+        # Given: detector with mocked hasher and progress callback
+        from unittest.mock import Mock
+
         detector = DuplicateDetector()
-        hasher = Hasher()
+        hasher = Mock(spec=Hasher)
+        hasher.calculate_partial_hashes_parallel = Mock()
+        hasher.calculate_full_hashes_parallel = Mock()
         progress_callback = Mock()
 
         # Create files with same size to ensure they go through all stages
@@ -354,9 +384,21 @@ class TestDuplicateDetector:
         assert progress_callback.call_count >= 5  # All stages + completion
 
     def test_find_duplicates_optimized_performance_improvement(self) -> None:
-        """Verify that optimized method reduces hash computations significantly."""
+        """Verify that optimized method reduces hash computations significantly.
+
+        Args:
+            self: Unused; part of unittest-style test signature.
+
+        Returns:
+            None.
+        """
+        # Given: detector with mocked hasher and many files with mostly unique sizes
+        from unittest.mock import Mock
+
         detector = DuplicateDetector()
-        hasher = Hasher()
+        hasher = Mock(spec=Hasher)
+        hasher.calculate_partial_hashes_parallel = Mock()
+        hasher.calculate_full_hashes_parallel = Mock()
 
         # Create many files with different sizes (most should be filtered out early)
         files = []
@@ -397,5 +439,111 @@ class TestDuplicateDetector:
         assert len(result) == 1
         assert len(result[0].files) == 2
 
-        # Most files should be filtered out by size alone, minimizing hash calls
-        # This is a basic sanity check - real performance testing would need actual files
+        # Verify that only duplicate files had hashes computed
+        partial_call_args = hasher.calculate_partial_hashes_parallel.call_args[0][0]
+        assert len(partial_call_args) == 2  # Only the 2 duplicates
+
+        full_call_args = hasher.calculate_full_hashes_parallel.call_args[0][0]
+        assert len(full_call_args) == 2  # Only the 2 duplicates
+
+    def test_find_duplicates_optimized_empty_list(self) -> None:
+        """Verify optimized method handles empty input gracefully.
+
+        Args:
+            self: Unused; part of unittest-style test signature.
+
+        Returns:
+            None.
+        """
+        # Given: detector with mocked hasher and empty file list
+        from unittest.mock import Mock
+
+        detector = DuplicateDetector()
+        hasher = Mock(spec=Hasher)
+        progress_callback = Mock()
+
+        # When: running optimized method with empty list
+        result = detector.find_duplicates_optimized([], hasher, progress_callback)
+
+        # Then: should return empty list and call progress callback
+        assert result == []
+        progress_callback.assert_called_with("No files to process", 0, 0)
+
+    def test_find_duplicates_optimized_handles_hash_failures(self) -> None:
+        """Verify graceful handling when hasher fails for some files.
+
+        Args:
+            self: Unused; part of unittest-style test signature.
+
+        Returns:
+            None.
+        """
+        # Given: detector with mocked hasher that clears hashes on failure
+        from unittest.mock import Mock
+
+        detector = DuplicateDetector()
+        hasher = Mock(spec=Hasher)
+
+        # Simulate hasher clearing hashes on failure
+        def clear_hashes(files):
+            for f in files:
+                f.partial_hash = None
+                f.full_hash = None
+
+        hasher.calculate_partial_hashes_parallel.side_effect = clear_hashes
+        hasher.calculate_full_hashes_parallel.side_effect = clear_hashes
+        progress_callback = Mock()
+
+        # Create files that would be duplicates but hasher fails
+        file1 = FileMeta(
+            path="/test/file1.txt",
+            size=100,
+            modified_time=datetime.now(),
+        )
+        file2 = FileMeta(
+            path="/test/file2.txt",
+            size=100,
+            modified_time=datetime.now(),
+        )
+
+        # When: running optimized method with failing hasher
+        result = detector.find_duplicates_optimized(
+            [file1, file2], hasher, progress_callback
+        )
+
+        # Then: should return empty list due to hash failures
+        assert result == []
+        # Progress callback should be called through all stages but may exit early
+        assert progress_callback.call_count >= 4
+
+    def test_find_duplicates_optimized_no_size_candidates(self) -> None:
+        """Verify optimized method handles files with unique sizes.
+
+        Args:
+            self: Unused; part of unittest-style test signature.
+
+        Returns:
+            None.
+        """
+        # Given: detector with mocked hasher and files of unique sizes
+        from unittest.mock import Mock
+
+        detector = DuplicateDetector()
+        hasher = Mock(spec=Hasher)
+        hasher.calculate_partial_hashes_parallel = Mock()
+        hasher.calculate_full_hashes_parallel = Mock()
+        progress_callback = Mock()
+
+        # Create files with different sizes
+        file1 = FileMeta(path="/test/file1.txt", size=100, modified_time=datetime.now())
+        file2 = FileMeta(path="/test/file2.txt", size=200, modified_time=datetime.now())
+
+        # When: running optimized method
+        result = detector.find_duplicates_optimized(
+            [file1, file2], hasher, progress_callback
+        )
+
+        # Then: should return empty list and not call hash methods
+        assert result == []
+        hasher.calculate_partial_hashes_parallel.assert_not_called()
+        hasher.calculate_full_hashes_parallel.assert_not_called()

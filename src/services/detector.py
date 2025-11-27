@@ -2,10 +2,13 @@
 
 from typing import List, Dict, Iterable, Callable, TypeVar, Optional
 from collections.abc import Hashable
+import logging
 
 from src.models.file_meta import FileMeta
 from src.models.duplicate_group import DuplicateGroup
 from src.services.hasher import Hasher
+
+logger = logging.getLogger(__name__)
 
 K = TypeVar("K", bound=Hashable)
 
@@ -91,7 +94,7 @@ class DuplicateDetector:
 
         # Filter groups with 2+ files
         size_candidates = []
-        for size, files_with_same_size in size_groups.items():
+        for _, files_with_same_size in size_groups.items():
             if len(files_with_same_size) >= 2:
                 size_candidates.extend(files_with_same_size)
 
@@ -108,13 +111,22 @@ class DuplicateDetector:
         # Step 3: Group by partial_hash, filter <2
         if progress_callback:
             progress_callback("Grouping by partial hash", 0, len(size_candidates))
+
+        files_with_partial = [f for f in size_candidates if f.partial_hash is not None]
+        skipped_count = len(size_candidates) - len(files_with_partial)
+        if skipped_count > 0:
+            logger.warning(
+                "Skipped %d files due to partial hash calculation failures",
+                skipped_count,
+            )
+
         partial_groups = self._group_by_key(
-            [f for f in size_candidates if f.partial_hash is not None],
+            files_with_partial,
             lambda f: f.partial_hash,
         )
 
         partial_candidates = []
-        for partial_hash, files_with_same_partial in partial_groups.items():
+        for _, files_with_same_partial in partial_groups.items():
             if len(files_with_same_partial) >= 2:
                 partial_candidates.extend(files_with_same_partial)
 
@@ -133,14 +145,22 @@ class DuplicateDetector:
         # Step 5: Final grouping by full_hash
         if progress_callback:
             progress_callback("Final grouping", 0, len(partial_candidates))
+
+        files_with_full = [f for f in partial_candidates if f.full_hash is not None]
+        skipped_count = len(partial_candidates) - len(files_with_full)
+        if skipped_count > 0:
+            logger.warning(
+                "Skipped %d files due to full hash calculation failures", skipped_count
+            )
+
         full_groups = self._group_by_key(
-            [f for f in partial_candidates if f.full_hash is not None],
+            files_with_full,
             lambda f: f.full_hash,
         )
 
         # Create duplicate groups for exact matches
         duplicate_groups = []
-        for full_hash, exact_duplicates in full_groups.items():
+        for _, exact_duplicates in full_groups.items():
             if len(exact_duplicates) >= 2:
                 duplicate_groups.append(DuplicateGroup(files=exact_duplicates))
 
