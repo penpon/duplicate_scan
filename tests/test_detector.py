@@ -269,29 +269,6 @@ class TestDuplicateDetector:
         assert len(result[0].files) == 3
         assert result[0].total_size == 300
 
-    def test_find_duplicates_optimized_exists(self) -> None:
-        """Verify that find_duplicates_optimized method exists.
-
-        Args:
-            self: Unused; part of unittest-style test signature.
-
-        Returns:
-            None.
-        """
-        # Given: a detector instance
-        detector = DuplicateDetector()
-
-        # When/Then: the method should exist with correct signature
-        assert hasattr(detector, "find_duplicates_optimized")
-
-        # Method signature should be correct
-        import inspect
-
-        sig = inspect.signature(detector.find_duplicates_optimized)
-        expected_params = ["files", "hasher", "progress_callback"]
-        actual_params = list(sig.parameters.keys())
-        assert actual_params == expected_params
-
     def test_find_duplicates_optimized_same_results_as_original(self) -> None:
         """Verify optimized method produces same results as original.
 

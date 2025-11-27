@@ -119,7 +119,7 @@ class DuplicateDetector:
             partial_candidates, hasher, progress_callback
         )
         if progress_callback:
-            progress_callback("Completed", len(duplicate_groups), len(files))
+            progress_callback("Completed", len(files), len(files))
 
         return duplicate_groups
 
