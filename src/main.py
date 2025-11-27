@@ -9,6 +9,7 @@ import flet as ft
 
 from src.ui.home_view import HomeView
 from src.ui.results_view import ResultsView
+from src.ui.progress_view import ProgressView
 from src.models.file_meta import FileMeta
 from src.models.duplicate_group import DuplicateGroup
 from src.models.scan_config import ScanConfig
@@ -29,6 +30,7 @@ class MainView(HomeView):
         super().__init__()
         self.page = page
         self.results_view: Optional[ResultsView] = None
+        self.progress_view: Optional[ProgressView] = None
 
     def _on_start_scan_clicked(self, e: ft.ControlEvent) -> None:
         """スキャン開始ボタンがクリックされたときの処理"""
@@ -43,13 +45,8 @@ class MainView(HomeView):
         )
 
         try:
-            # Show progress notification
-            self.page.snack_bar = ft.SnackBar(
-                content=ft.Text(f"Starting scan of {len(selected_folders)} folders..."),
-                bgcolor=ft.Colors.BLUE_600,
-            )
-            self.page.snack_bar.open = True
-            self.page.update()
+            # Show progress view
+            self._show_progress()
 
             # Collect files from selected folders
             files = self._collect_files(selected_folders)
@@ -71,16 +68,11 @@ class MainView(HomeView):
 
             # Define progress callback
             def progress_callback(message: str, current: int, total: int) -> None:
-                if not self.page:
+                if not self.page or not self.progress_view:
                     return
 
                 try:
-                    self.page.snack_bar = ft.SnackBar(
-                        content=ft.Text(f"{message}: {current}/{total}"),
-                        bgcolor=ft.Colors.GREEN_600,
-                    )
-                    self.page.snack_bar.open = True
-                    self.page.update()
+                    self.progress_view.update_progress(message, current, total)
                 except Exception as err:  # noqa: BLE001
                     logging.warning("Failed to update progress: %s", err)
 
@@ -141,6 +133,34 @@ class MainView(HomeView):
 
         return files
 
+    def _show_progress(self) -> None:
+        """
+        プログレスビューを表示する。
+
+        ProgressViewを作成または再利用し、キャンセルコールバックを設定したうえで
+        ページに追加する。既存のコンテンツはクリアされる。
+
+        Raises:
+            None
+        """
+        if not self.page:
+            return
+
+        # Create progress view
+        if not self.progress_view:
+            self.progress_view = ProgressView()
+
+        self.progress_view.page = self.page
+        self.progress_view.reset()
+
+        # Set cancel callback
+        self.progress_view.set_cancel_callback(self._on_scan_cancelled)
+
+        # Clear current content and show progress
+        self.page.controls.clear()
+        self.page.add(self.progress_view.build())
+        self.page.update()
+
     def _show_results(self, duplicate_groups: List[DuplicateGroup]) -> None:
         """重複ファイルの結果を表示する"""
         if not self.page:
@@ -168,6 +188,15 @@ class MainView(HomeView):
         )
         self.page.snack_bar.open = True
         self.page.update()
+
+    def _on_scan_cancelled(self) -> None:
+        """スキャンがキャンセルされたときの処理"""
+        logging.info("Scan cancelled by user")
+        # ホーム画面に戻る
+        if self.page:
+            self.page.controls.clear()
+            self.page.add(self.build())
+            self.page.update()
 
 
 def main(page: ft.Page) -> None:
