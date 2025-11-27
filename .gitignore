@@ -42,3 +42,6 @@ htmlcov/
 # Build artifacts (Flet)
 *.app
 *.dmg
+
+# Test artifacts
+deleted_files_*/
