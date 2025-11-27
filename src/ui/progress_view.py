@@ -103,6 +103,14 @@ class ProgressView:
             self.page.update()
 
     def _on_cancel_clicked(self, e: Optional[ft.ControlEvent]) -> None:
-        """キャンセルボタンがクリックされたときの処理"""
+        """
+        キャンセルボタンがクリックされたときの処理。
+
+        Args:
+            e: Fletのコントロールイベント。Noneの場合もある。
+
+        Raises:
+            なし
+        """
         if self.cancel_callback:
             self.cancel_callback()
