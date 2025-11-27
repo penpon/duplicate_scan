@@ -1,10 +1,11 @@
 """Duplicate Detector service."""
 
-from typing import List, Dict, Iterable, Callable, TypeVar
+from typing import List, Dict, Iterable, Callable, TypeVar, Optional
 from collections.abc import Hashable
 
 from src.models.file_meta import FileMeta
 from src.models.duplicate_group import DuplicateGroup
+from src.services.hasher import Hasher
 
 K = TypeVar("K", bound=Hashable)
 
@@ -59,6 +60,92 @@ class DuplicateDetector:
                 for exact_duplicates in full_hash_groups.values():
                     if len(exact_duplicates) >= 2:
                         duplicate_groups.append(DuplicateGroup(files=exact_duplicates))
+
+        return duplicate_groups
+
+    def find_duplicates_optimized(
+        self,
+        files: List[FileMeta],
+        hasher: Hasher,
+        progress_callback: Optional[Callable[[str, int, int], None]] = None,
+    ) -> List[DuplicateGroup]:
+        """Find duplicate files using optimized pipeline.
+
+        Args:
+            files: List of file metadata to analyze
+            hasher: Hasher instance for parallel hash computation
+            progress_callback: Optional callback for progress updates
+
+        Returns:
+            List of duplicate groups containing 2+ files
+        """
+        if not files:
+            if progress_callback:
+                progress_callback("No files to process", 0, 0)
+            return []
+
+        # Step 1: Group by size (no I/O)
+        if progress_callback:
+            progress_callback("Grouping by size", 0, len(files))
+        size_groups = self._group_by_key(files, lambda f: f.size)
+
+        # Filter groups with 2+ files
+        size_candidates = []
+        for size, files_with_same_size in size_groups.items():
+            if len(files_with_same_size) >= 2:
+                size_candidates.extend(files_with_same_size)
+
+        if not size_candidates:
+            if progress_callback:
+                progress_callback("No duplicate size candidates found", 0, len(files))
+            return []
+
+        # Step 2: Compute partial_hash for candidates (parallel)
+        if progress_callback:
+            progress_callback("Computing partial hashes", 0, len(size_candidates))
+        hasher.calculate_partial_hashes_parallel(size_candidates)
+
+        # Step 3: Group by partial_hash, filter <2
+        if progress_callback:
+            progress_callback("Grouping by partial hash", 0, len(size_candidates))
+        partial_groups = self._group_by_key(
+            [f for f in size_candidates if f.partial_hash is not None],
+            lambda f: f.partial_hash,
+        )
+
+        partial_candidates = []
+        for partial_hash, files_with_same_partial in partial_groups.items():
+            if len(files_with_same_partial) >= 2:
+                partial_candidates.extend(files_with_same_partial)
+
+        if not partial_candidates:
+            if progress_callback:
+                progress_callback(
+                    "No partial hash matches found", 0, len(size_candidates)
+                )
+            return []
+
+        # Step 4: Compute full_hash for matches (parallel)
+        if progress_callback:
+            progress_callback("Computing full hashes", 0, len(partial_candidates))
+        hasher.calculate_full_hashes_parallel(partial_candidates)
+
+        # Step 5: Final grouping by full_hash
+        if progress_callback:
+            progress_callback("Final grouping", 0, len(partial_candidates))
+        full_groups = self._group_by_key(
+            [f for f in partial_candidates if f.full_hash is not None],
+            lambda f: f.full_hash,
+        )
+
+        # Create duplicate groups for exact matches
+        duplicate_groups = []
+        for full_hash, exact_duplicates in full_groups.items():
+            if len(exact_duplicates) >= 2:
+                duplicate_groups.append(DuplicateGroup(files=exact_duplicates))
+
+        if progress_callback:
+            progress_callback("Completed", len(duplicate_groups), len(files))
 
         return duplicate_groups
 

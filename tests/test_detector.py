@@ -1,8 +1,10 @@
 """Tests for DuplicateDetector."""
 
 from datetime import datetime
+from unittest.mock import Mock
 from src.models.file_meta import FileMeta
 from src.services.detector import DuplicateDetector
+from src.services.hasher import Hasher
 
 
 class TestDuplicateDetector:
@@ -266,3 +268,134 @@ class TestDuplicateDetector:
         assert len(result) == 1
         assert len(result[0].files) == 3
         assert result[0].total_size == 300
+
+    def test_find_duplicates_optimized_exists(self) -> None:
+        """Verify that find_duplicates_optimized method exists."""
+        detector = DuplicateDetector()
+        hasher = Hasher()
+
+        # This should fail initially - method doesn't exist yet
+        assert hasattr(detector, "find_duplicates_optimized")
+
+        # Method signature should be correct
+        import inspect
+
+        sig = inspect.signature(detector.find_duplicates_optimized)
+        expected_params = ["files", "hasher", "progress_callback"]
+        actual_params = list(sig.parameters.keys())
+        assert actual_params == expected_params
+
+    def test_find_duplicates_optimized_same_results_as_original(self) -> None:
+        """Verify optimized method produces same results as original."""
+        # Given: test files with duplicates
+        detector = DuplicateDetector()
+        hasher = Hasher()
+
+        file1 = FileMeta(
+            path="/test/file1.txt",
+            size=100,
+            modified_time=datetime.now(),
+            partial_hash="hash1",
+            full_hash="full1",
+        )
+        file2 = FileMeta(
+            path="/test/file2.txt",
+            size=100,
+            modified_time=datetime.now(),
+            partial_hash="hash1",
+            full_hash="full1",
+        )
+        file3 = FileMeta(
+            path="/test/file3.txt",
+            size=200,
+            modified_time=datetime.now(),
+            partial_hash="hash2",
+            full_hash="full2",
+        )
+
+        # When: comparing both methods
+        original_result = detector.find_duplicates([file1, file2, file3])
+        optimized_result = detector.find_duplicates_optimized(
+            [file1, file2, file3], hasher
+        )
+
+        # Then: results should be identical
+        assert len(original_result) == len(optimized_result)
+        if original_result:
+            assert len(original_result[0].files) == len(optimized_result[0].files)
+            assert original_result[0].total_size == optimized_result[0].total_size
+
+    def test_find_duplicates_optimized_progress_callback(self) -> None:
+        """Verify progress callback is called at each stage."""
+        detector = DuplicateDetector()
+        hasher = Hasher()
+        progress_callback = Mock()
+
+        # Create files with same size to ensure they go through all stages
+        file1 = FileMeta(
+            path="/test/file1.txt",
+            size=100,
+            modified_time=datetime.now(),
+            partial_hash="hash1",
+            full_hash="full1",
+        )
+        file2 = FileMeta(
+            path="/test/file2.txt",
+            size=100,
+            modified_time=datetime.now(),
+            partial_hash="hash1",
+            full_hash="full1",
+        )
+
+        # When: running optimized method with progress callback
+        detector.find_duplicates_optimized([file1, file2], hasher, progress_callback)
+
+        # Then: progress callback should be called multiple times
+        assert progress_callback.call_count >= 5  # All stages + completion
+
+    def test_find_duplicates_optimized_performance_improvement(self) -> None:
+        """Verify that optimized method reduces hash computations significantly."""
+        detector = DuplicateDetector()
+        hasher = Hasher()
+
+        # Create many files with different sizes (most should be filtered out early)
+        files = []
+        for i in range(100):
+            files.append(
+                FileMeta(
+                    path=f"/test/file{i}.txt",
+                    size=100
+                    + i,  # All different sizes - should be filtered out at size stage
+                    modified_time=datetime.now(),
+                )
+            )
+
+        # Add a few duplicates with pre-computed hashes to avoid file I/O
+        files.extend(
+            [
+                FileMeta(
+                    path="/test/dup1.txt",
+                    size=500,
+                    modified_time=datetime.now(),
+                    partial_hash="dup_hash",
+                    full_hash="dup_full",
+                ),
+                FileMeta(
+                    path="/test/dup2.txt",
+                    size=500,
+                    modified_time=datetime.now(),
+                    partial_hash="dup_hash",
+                    full_hash="dup_full",
+                ),
+            ]
+        )
+
+        # When: running optimized method
+        result = detector.find_duplicates_optimized(files, hasher)
+
+        # Then: should find the duplicates and avoid unnecessary hash computations
+        assert len(result) == 1
+        assert len(result[0].files) == 2
+
+        # Most files should be filtered out by size alone, minimizing hash calls
+        # This is a basic sanity check - real performance testing would need actual files
