@@ -279,8 +279,6 @@ class TestDuplicateDetector:
             None.
         """
         # Given: test files with duplicates and mocked hasher
-        from unittest.mock import Mock
-
         detector = DuplicateDetector()
         hasher = Mock(spec=Hasher)
         hasher.calculate_partial_hashes_parallel = Mock()
@@ -330,8 +328,6 @@ class TestDuplicateDetector:
             None.
         """
         # Given: detector with mocked hasher and progress callback
-        from unittest.mock import Mock
-
         detector = DuplicateDetector()
         hasher = Mock(spec=Hasher)
         hasher.calculate_partial_hashes_parallel = Mock()
@@ -370,8 +366,6 @@ class TestDuplicateDetector:
             None.
         """
         # Given: detector with mocked hasher and many files with mostly unique sizes
-        from unittest.mock import Mock
-
         detector = DuplicateDetector()
         hasher = Mock(spec=Hasher)
         hasher.calculate_partial_hashes_parallel = Mock()
@@ -433,8 +427,6 @@ class TestDuplicateDetector:
             None.
         """
         # Given: detector with mocked hasher and empty file list
-        from unittest.mock import Mock
-
         detector = DuplicateDetector()
         hasher = Mock(spec=Hasher)
         progress_callback = Mock()
@@ -456,8 +448,6 @@ class TestDuplicateDetector:
             None.
         """
         # Given: detector with mocked hasher that clears hashes on failure
-        from unittest.mock import Mock
-
         detector = DuplicateDetector()
         hasher = Mock(spec=Hasher)
 
@@ -503,8 +493,6 @@ class TestDuplicateDetector:
             None.
         """
         # Given: detector with mocked hasher and files of unique sizes
-        from unittest.mock import Mock
-
         detector = DuplicateDetector()
         hasher = Mock(spec=Hasher)
         hasher.calculate_partial_hashes_parallel = Mock()
