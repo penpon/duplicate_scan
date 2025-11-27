@@ -97,7 +97,16 @@ class MainView(HomeView):
             self._show_error(f"Scan failed: {ex}")
 
     def _collect_files(self, folders: List[str]) -> List[FileMeta]:
-        """指定されたフォルダからファイルを収集する"""
+        """指定されたフォルダからファイルを収集する。
+
+        Args:
+            folders: 再帰的に走査するフォルダパスのリスト。
+
+        Returns:
+            List[FileMeta]: アクセス可能だったファイルのメタデータ一覧。
+            存在しないフォルダやアクセス権のないファイルはログを出さずに
+            スキップされる。
+        """
         files: List[FileMeta] = []
 
         for folder_path in folders:
